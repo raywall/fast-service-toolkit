@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/raywall/dynamodb-quick-service/dyndb"
+	"github.com/raywall/fast-service-toolkit/dyndb"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"

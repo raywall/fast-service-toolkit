@@ -4,9 +4,9 @@ package main
 // 	"context"
 // 	"testing"
 
-// 	"github.com/raywall/dynamodb-quick-service/dyndb"
-// 	"github.com/raywall/dynamodb-quick-service/examples/users/models"
-// 	"github.com/raywall/dynamodb-quick-service/examples/users/repository"
+// 	"github.com/raywall/fast-service-toolkit/dyndb"
+// 	"github.com/raywall/fast-service-toolkit/examples/users/models"
+// 	"github.com/raywall/fast-service-toolkit/examples/users/repository"
 
 // 	"github.com/stretchr/testify/assert"
 // 	"github.com/stretchr/testify/require"

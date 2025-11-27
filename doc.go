@@ -40,8 +40,8 @@
 //
 //		"github.com/aws/aws-sdk-go-v2/aws"
 //		"github.com/aws/aws-sdk-go-v2/service/dynamodb" // Cliente AWS
-//		"github.com/raywall/dynamodb-quick-service/dyndb"
-//		"github.com/raywall/dynamodb-quick-service/envloader"
+//		"github.com/raywall/fast-service-toolkit/dyndb"
+//		"github.com/raywall/fast-service-toolkit/envloader"
 //	)
 //
 //	// Estrutura para ser preenchida pelo envloader

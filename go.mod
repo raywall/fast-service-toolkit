@@ -1,4 +1,4 @@
-module github.com/raywall/dynamodb-quick-service
+module github.com/raywall/fast-service-toolkit
 
 go 1.25.4
 

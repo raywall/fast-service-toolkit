@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/raywall/dynamodb-quick-service/api"
+	"github.com/raywall/fast-service-toolkit/api"
 )
 
 func main() {

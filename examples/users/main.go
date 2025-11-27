@@ -8,8 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 
-	"github.com/raywall/dynamodb-quick-service/examples/users/models"
-	"github.com/raywall/dynamodb-quick-service/examples/users/repository"
+	"github.com/raywall/fast-service-toolkit/examples/users/models"
+	"github.com/raywall/fast-service-toolkit/examples/users/repository"
 )
 
 func main() {

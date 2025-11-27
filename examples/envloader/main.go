@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/raywall/dynamodb-quick-service/envloader"
+	"github.com/raywall/fast-service-toolkit/envloader"
 )
 
 func ExampleLoad() {

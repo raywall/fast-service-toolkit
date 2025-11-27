@@ -1,13 +1,13 @@
-# dynamodb-quick-service: kit de ferramentas Go para backend otimizado
+# fast-service-toolkit: kit de ferramentas Go para backend otimizado
 
-O `dynamodb-quick-service` é uma biblioteca modular em Go projetada para acelerar a construção de backends robustos, especialmente aqueles que utilizam o AWS DynamoDB e necessitam de orquestração de APIs externas e **carregamento de configuração simplificado**.
+O `fast-service-toolkit` é uma biblioteca modular em Go projetada para acelerar a construção de backends robustos, especialmente aqueles que utilizam o AWS DynamoDB e necessitam de orquestração de APIs externas e **carregamento de configuração simplificado**.
 
 Este pacote consolida três utilitários poderosos: **`envloader`** (Configuração), **`dyndb`** (Persistência) e **`api`** (Orquestração).
 
 ## Instalação
 
 ```bash
-go get [github.com/raywall/dynamodb-quick-service](https://github.com/raywall/dynamodb-quick-service)
+go get [github.com/raywall/fast-service-toolkit](https://github.com/raywall/fast-service-toolkit)
 ```
 
 ## Estrutura Modular
@@ -35,7 +35,7 @@ package main
 
 import (
     "log"
-    "[github.com/raywall/dynamodb-quick-service/envloader](https://github.com/raywall/dynamodb-quick-service/envloader)"
+    "[github.com/raywall/fast-service-toolkit/envloader](https://github.com/raywall/fast-service-toolkit/envloader)"
 )
 
 type Config struct {
@@ -64,7 +64,7 @@ package main
 import (
     "context"
     "log"
-    "[github.com/raywall/dynamodb-quick-service/dyndb](https://github.com/raywall/dynamodb-quick-service/dyndb)"
+    "[github.com/raywall/fast-service-toolkit/dyndb](https://github.com/raywall/fast-service-toolkit/dyndb)"
     // Importações do AWS SDK...
 )
 
@@ -97,7 +97,7 @@ package main
 import (
     "context"
     "log"
-    "[github.com/raywall/dynamodb-quick-service/api](https://github.com/raywall/dynamodb-quick-service/api)"
+    "[github.com/raywall/fast-service-toolkit/api](https://github.com/raywall/fast-service-toolkit/api)"
 )
 
 func RunUserPipeline() {
