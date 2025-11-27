@@ -7,7 +7,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 )
 
-// MockStore é um mock completo e fácil de usar para testes
+// MockStore é um mock completo e fácil de usar para testes da interface Store[T].
+//
+// Ele expõe campos de função (`GetFn`, `PutFn`, etc.) que podem ser definidos
+// para simular o comportamento desejado do DynamoDB durante os testes.
 type MockStore[T any] struct {
 	GetFn        func(ctx context.Context, hashKey, sortKey any) (*T, error)
 	PutFn        func(ctx context.Context, item T) error
@@ -67,7 +70,9 @@ func (m *MockStore[T]) Scan() *QueryBuilder[T] {
 	return (&MockQueryBuilder[T]{}).Builder
 }
 
-// MockDynamoClient
+// MockDynamoClient é um mock para a interface DynamoDBClient de baixo nível.
+//
+// Permite testar a lógica interna do `dynamoStore` sem tocar no AWS SDK.
 type MockDynamoClient struct {
 	GetItemFn        func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error)
 	PutItemFn        func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
@@ -111,12 +116,13 @@ func (m *MockDynamoClient) BatchGetItem(ctx context.Context, params *dynamodb.Ba
 	return nil, ErrNotFound
 }
 
-// MockQueryBuilder representa o mock do builder fluente
+// MockQueryBuilder representa o mock do QueryBuilder fluente.
 type MockQueryBuilder[T any] struct {
 	Builder *QueryBuilder[T]
 	ExecFn  func(ctx context.Context) ([]T, string, error)
 }
 
+// Exec simula a execução da consulta.
 func (m *MockQueryBuilder[T]) Exec(ctx context.Context) ([]T, string, error) {
 	if m.ExecFn != nil {
 		return m.ExecFn(ctx)
@@ -124,7 +130,7 @@ func (m *MockQueryBuilder[T]) Exec(ctx context.Context) ([]T, string, error) {
 	return nil, "", nil
 }
 
-// Métodos fluentes vazios (só para compilar)
+// Métodos fluentes vazios (só para compilar) que retornam o Builder mockado.
 func (m *MockQueryBuilder[T]) Index(string) *QueryBuilder[T]            { return m.Builder }
 func (m *MockQueryBuilder[T]) KeyEqual(string, any) *QueryBuilder[T]    { return m.Builder }
 func (m *MockQueryBuilder[T]) FilterEqual(string, any) *QueryBuilder[T] { return m.Builder }

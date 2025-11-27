@@ -1,4 +1,5 @@
-// dyndb/store.go
+// Package dyndb implementa a interface Store para operações CRUD e Batch
+// usando o AWS DynamoDB Go SDK.
 package dyndb
 
 import (
@@ -13,15 +14,37 @@ import (
 	"github.com/raywall/dynamodb-quick-service/envloader"
 )
 
+// dynamoStore é a implementação concreta e não exportada de Store[T].
+//
+// Gerencia a comunicação com o cliente DynamoDB usando a configuração da tabela.
 type dynamoStore[T any] struct {
+	// client é a abstração do cliente DynamoDB.
 	client DynamoDBClient
-	cfg    TableConfig[T]
+	// cfg é a configuração da tabela para este Store.
+	cfg TableConfig[T]
 }
 
-// New cria um store reutilizável
+// New cria um store reutilizável e fortemente tipado (Store[T]).
+//
+// Se `cfg.TableName` for vazio, tenta carregar o nome da tabela (e chaves)
+// de variáveis de ambiente usando o `envloader`.
+//
+// Parâmetros:
+//
+//	client: Uma implementação de DynamoDBClient.
+//	cfg: A configuração da tabela (nome e chaves).
+//
+// Retorna:
+//
+//	Store[T]: Uma nova instância do Store para o tipo T.
+//
+// Exemplo:
+//
+//	store := New(client, TableConfig[User]{TableName: "Users", HashKey: "id"})
 func New[T any](client DynamoDBClient, cfg TableConfig[T]) Store[T] {
 	if cfg.TableName == "" {
-		_ = envloader.Load(cfg)
+		// Tenta carregar a configuração da tabela de env vars
+		_ = envloader.Load(&cfg)
 	}
 
 	return &dynamoStore[T]{
@@ -30,7 +53,24 @@ func New[T any](client DynamoDBClient, cfg TableConfig[T]) Store[T] {
 	}
 }
 
-// Get item por chave primária
+// Get busca um item por chave primária (hashKey e sortKey opcional).
+//
+// O item retornado é um ponteiro para a struct T.
+//
+// Parâmetros:
+//
+//	ctx: Contexto de requisição.
+//	hashKey: Valor da chave de partição.
+//	sortKey: Valor da chave de ordenação (nil se não for usado).
+//
+// Retorna:
+//
+//	*T: O ponteiro para o item encontrado.
+//	error: nil, ErrNotFound, ou erro de I/O/Unmarshal.
+//
+// Erros:
+//   - ErrNotFound: Item não existe.
+//   - Erro de I/O ou Unmarshal.
 func (s *dynamoStore[T]) Get(ctx context.Context, hashKey, sortKey any) (*T, error) {
 	key := map[string]types.AttributeValue{
 		s.cfg.HashKey: attr(hashKey),
@@ -58,7 +98,19 @@ func (s *dynamoStore[T]) Get(ctx context.Context, hashKey, sortKey any) (*T, err
 	return &item, nil
 }
 
-// Put item (upsert)
+// Put insere ou atualiza (upsert) um item.
+//
+// Se um atributo TTL estiver configurado em `TableConfig` e não for fornecido
+// no item, o Store o preencherá automaticamente (padrão: 30 dias).
+//
+// Parâmetros:
+//
+//	ctx: Contexto de requisição.
+//	item: O item a ser inserido/atualizado.
+//
+// Retorna:
+//
+//	error: nil ou erro de marshalling/PutItem.
 func (s *dynamoStore[T]) Put(ctx context.Context, item T) error {
 	av, err := attributevalue.MarshalMap(item)
 	if err != nil {
@@ -83,7 +135,17 @@ func (s *dynamoStore[T]) Put(ctx context.Context, item T) error {
 	return nil
 }
 
-// Delete item
+// Delete remove um item por chave primária.
+//
+// Parâmetros:
+//
+//	ctx: Contexto de requisição.
+//	hashKey: Valor da chave de partição.
+//	sortKey: Valor da chave de ordenação.
+//
+// Retorna:
+//
+//	error: nil ou erro de DeleteItem.
 func (s *dynamoStore[T]) Delete(ctx context.Context, hashKey, sortKey any) error {
 	key := map[string]types.AttributeValue{
 		s.cfg.HashKey: attr(hashKey),
@@ -102,7 +164,19 @@ func (s *dynamoStore[T]) Delete(ctx context.Context, hashKey, sortKey any) error
 	return nil
 }
 
-// BatchWrite — puts + deletes (máx 25 por chamada)
+// BatchWrite realiza operações de Put e Delete em lote.
+//
+// Divide as operações em grupos de 25, respeitando o limite do DynamoDB.
+//
+// Parâmetros:
+//
+//	ctx: Contexto de requisição.
+//	puts: Slice de itens T para PutRequest.
+//	deletes: Slice de chaves [hashKey, sortKey] para DeleteRequest.
+//
+// Retorna:
+//
+//	error: nil ou erro de Marshalling/BatchWriteItem.
 func (s *dynamoStore[T]) BatchWrite(ctx context.Context, puts []T, deletes [][2]any) error {
 	var writeRequests []types.WriteRequest
 
@@ -150,7 +224,19 @@ func (s *dynamoStore[T]) BatchWrite(ctx context.Context, puts []T, deletes [][2]
 	return nil
 }
 
-// BatchGet — até 100 chaves por chamada
+// BatchGet busca múltiplos itens por chave primária.
+//
+// Divide as buscas em grupos de 100, respeitando o limite do DynamoDB.
+//
+// Parâmetros:
+//
+//	ctx: Contexto de requisição.
+//	keys: Slice de chaves [hashKey, sortKey] a serem buscadas.
+//
+// Retorna:
+//
+//	[]T: Slice de itens encontrados.
+//	error: nil ou erro de BatchGetItem/Unmarshal.
 func (s *dynamoStore[T]) BatchGet(ctx context.Context, keys [][2]any) ([]T, error) {
 	var keysToGet []map[string]types.AttributeValue
 	for _, k := range keys {
@@ -202,7 +288,35 @@ func (s *dynamoStore[T]) BatchGet(ctx context.Context, keys [][2]any) ([]T, erro
 	return results, nil
 }
 
-// attr converte qualquer valor para types.AttributeValue
+// Query inicia o QueryBuilder para consultas.
+func (s *dynamoStore[T]) Query() *QueryBuilder[T] {
+	return &QueryBuilder[T]{
+		store:       s,
+		scanForward: aws.Bool(true),
+	}
+}
+
+// Scan inicia o QueryBuilder para varreduras.
+func (s *dynamoStore[T]) Scan() *QueryBuilder[T] {
+	return &QueryBuilder[T]{
+		store:  s,
+		isScan: true,
+	}
+}
+
+// attr converte qualquer valor de chave (hashKey, sortKey, TTL) para
+// o tipo de baixo nível do DynamoDB (types.AttributeValue).
+//
+// Retorna AttributeValueMemberNULL se o valor for nil ou houver erro
+// no marshalling.
+//
+// Parâmetros:
+//
+//	v: O valor a ser convertido.
+//
+// Retorna:
+//
+//	types.AttributeValue: O valor convertido.
 func attr(v any) types.AttributeValue {
 	if v == nil {
 		return &types.AttributeValueMemberNULL{Value: true}

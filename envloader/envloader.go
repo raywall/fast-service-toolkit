@@ -1,3 +1,5 @@
+// Package envloader fornece um utilitário simples para carregar variáveis de
+// ambiente diretamente para campos de uma struct Go.
 package envloader
 
 import (
@@ -7,8 +9,26 @@ import (
 	"strings"
 )
 
-// Load preenche uma struct com valores de variáveis de ambiente
-// baseado nas tags "env" e "envDefault"
+// Load preenche uma struct com valores de variáveis de ambiente.
+//
+// A função itera sobre os campos da struct e usa as tags "env" para buscar
+// o valor correspondente. Se a variável de ambiente não existir,
+// o valor de "envDefault" será usado.
+//
+// Parâmetros:
+//   config: Um ponteiro para a struct que será preenchida. Deve ser um ponteiro para struct.
+//
+// Retorna:
+//   error: Retorna nil em caso de sucesso ou um erro tipado (`InvalidConfigError`,
+//     `FieldError`) se a operação falhar.
+//
+// Exemplo:
+//   cfg := &Config{}
+//   err := Load(cfg)
+//
+// Erros:
+//   - InvalidConfigError: Se 'config' não for um ponteiro para struct.
+//   - FieldError: Se houver falha na conversão de tipo de uma variável de ambiente para o tipo do campo.
 func Load(config interface{}) error {
 	val := reflect.ValueOf(config)
 	if val.Kind() != reflect.Ptr || val.Elem().Kind() != reflect.Struct {
@@ -18,7 +38,9 @@ func Load(config interface{}) error {
 	return loadStruct(val.Elem())
 }
 
-// loadStruct processa recursivamente uma struct
+// loadStruct processa recursivamente uma struct (ou struct aninhada).
+//
+// Este método é o núcleo da lógica de reflection.
 func loadStruct(val reflect.Value) error {
 	typ := val.Type()
 
@@ -86,7 +108,23 @@ func loadStruct(val reflect.Value) error {
 	return nil
 }
 
-// setFieldValue define o valor de um campo baseado no seu tipo
+// setFieldValue define o valor de um campo de reflection (reflect.Value)
+// baseado no seu tipo (string, int, bool, float).
+//
+// O valor de entrada deve ser uma string, que é convertida para o tipo
+// nativo do campo Go.
+//
+// Parâmetros:
+//   field: O campo Go (reflect.Value) a ser modificado.
+//   value: A string contendo o valor da variável de ambiente.
+//
+// Retorna:
+//   error: Retorna nil em caso de sucesso ou um erro se a conversão falhar,
+//     ou se o tipo do campo não for suportado (`UnsupportedTypeError`).
+//
+// Erros:
+//   - UnsupportedTypeError: Se o `field.Kind()` não estiver listado no switch.
+//   - Erros de conversão do `strconv` (ex: "abc" para int).
 func setFieldValue(field reflect.Value, value string) error {
 	if !field.CanSet() {
 		return nil
@@ -131,7 +169,17 @@ func setFieldValue(field reflect.Value, value string) error {
 	return nil
 }
 
-// MustLoad é similar ao Load, mas panic em caso de erro
+// MustLoad é similar ao Load, mas provoca um panic em caso de erro.
+//
+// Deve ser usado para configurações essenciais onde a falha na inicialização
+// do programa é inaceitável.
+//
+// Parâmetros:
+//   config: Um ponteiro para a struct de configuração.
+//
+// Exemplo:
+//   cfg := &Config{}
+//   MustLoad(cfg) // O programa termina se houver erro
 func MustLoad(config interface{}) {
 	if err := Load(config); err != nil {
 		panic(err)
