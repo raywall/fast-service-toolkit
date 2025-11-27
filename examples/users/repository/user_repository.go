@@ -5,8 +5,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-
 	"github.com/raywall/dynamodb-quick-service/dyndb"
 	"github.com/raywall/dynamodb-quick-service/examples/users/models"
 )
@@ -15,7 +13,7 @@ type UserRepository struct {
 	store dyndb.Store[models.User]
 }
 
-func NewUserRepository(client *dynamodb.Client) *UserRepository {
+func NewUserRepository(client dyndb.DynamoDBClient) *UserRepository {
 	return &UserRepository{
 		store: dyndb.New[models.User](client, dyndb.TableConfig[models.User]{
 			TableName:    "dev-users", // ou use env var
