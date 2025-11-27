@@ -1,4 +1,4 @@
-# dynamodb-quick-service: Kit de ferramentas Go para backend otimizado
+# dynamodb-quick-service: kit de ferramentas Go para backend otimizado
 
 O `dynamodb-quick-service` é uma biblioteca modular em Go projetada para acelerar a construção de backends robustos, especialmente aqueles que utilizam o AWS DynamoDB e necessitam de orquestração de APIs externas e **carregamento de configuração simplificado**.
 
