@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/raywall/dynamodb-quick-service/envloader"
 )
 
 type dynamoStore[T any] struct {
@@ -19,6 +20,10 @@ type dynamoStore[T any] struct {
 
 // New cria um store reutilizável
 func New[T any](client DynamoDBClient, cfg TableConfig[T]) Store[T] {
+	if cfg.TableName == "" {
+		_ = envloader.Load(cfg)
+	}
+
 	return &dynamoStore[T]{
 		client: client,
 		cfg:    cfg,
