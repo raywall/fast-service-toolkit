@@ -266,9 +266,9 @@ func TestLoad_ComplexStruct(t *testing.T) {
 	assert.Equal(t, "1.0.0", config.Version)
 
 	// Server config
-	assert.Equal(t, 9090, config.Server.Port)        // Do environment
-	assert.Equal(t, "0.0.0.0", config.Server.Host)   // Default
-	assert.True(t, config.Server.Debug)              // Do environment
+	assert.Equal(t, 9090, config.Server.Port)                // Do environment
+	assert.Equal(t, "0.0.0.0", config.Server.Host)           // Default
+	assert.True(t, config.Server.Debug)                      // Do environment
 	assert.Equal(t, "production", config.Server.Environment) // Default
 
 	// Database config

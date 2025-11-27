@@ -44,18 +44,18 @@ type Store[T any] interface {
 
 // GlobalSecondaryIndex para GSIs
 type GlobalSecondaryIndex struct {
-	Name           string
-	HashKey        string
-	SortKey        string
-	ProjectionType types.ProjectionType
+	Name           string               `env:"DYNAMODB_GSI_NAME"`
+	HashKey        string               `env:"DYNAMODB_GSI_HASH_KEY"`
+	SortKey        string               `env:"DYNAMODB_GSI_SORT_KEY"`
+	ProjectionType types.ProjectionType `env:"DYNAMODB_GSI_PROJECTION_TYPE"`
 }
 
 // TableConfig — configuração da tabela
 type TableConfig[T any] struct {
-	TableName    string
-	HashKey      string
-	SortKey      string // opcional
-	TTLAttribute string // opcional
+	TableName    string `env:"DYNAMODB_TABLE_NAME"`
+	HashKey      string `env:"DYNAMODB_HASH_KEY"`
+	SortKey      string `env:"DYNAMODB_SORT_KEY"`      // opcional
+	TTLAttribute string `env:"DYNAMODB_TTL_ATTRIBUTE"` // opcional
 }
 
 // QueryFilter — tipo simples e que funciona 100% com genéricos

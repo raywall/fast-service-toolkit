@@ -15,7 +15,7 @@ type UserRepository struct {
 
 func NewUserRepository(client dyndb.DynamoDBClient) *UserRepository {
 	return &UserRepository{
-		store: dyndb.New[models.User](client, dyndb.TableConfig[models.User]{
+		store: dyndb.New(client, dyndb.TableConfig[models.User]{
 			TableName:    "dev-users", // ou use env var
 			HashKey:      "userId",
 			SortKey:      "email",

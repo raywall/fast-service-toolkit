@@ -26,7 +26,7 @@ type FieldError struct {
 }
 
 func (e *FieldError) Error() string {
-	return fmt.Sprintf("envloader: error setting field %s from env %s=%s: %v", 
+	return fmt.Sprintf("envloader: error setting field %s from env %s=%s: %v",
 		e.FieldName, e.EnvVar, e.Value, e.Err)
 }
 
