@@ -147,23 +147,39 @@ func WithScanForward[T any](forward bool) QueryFilter[T] {
 	}
 }
 
-// Exec executa a consulta
-func (qb *QueryBuilder[T]) Exec(ctx context.Context) ([]T, string, error) {
+// Exec executa a consulta com filtros opcionais
+func (qb *QueryBuilder[T]) Exec(ctx context.Context, filters ...QueryFilter[T]) ([]T, string, error) {
+	// Aplica os filtros antes de construir a expressão
+	for _, filter := range filters {
+		filter(qb)
+	}
+
 	builder := expression.NewBuilder()
+
+	hasConditions := false
 
 	if qb.keyCond != nil {
 		builder = builder.WithKeyCondition(*qb.keyCond)
+		hasConditions = true
 	}
 	if qb.filterCond != nil {
 		builder = builder.WithFilter(*qb.filterCond)
+		hasConditions = true
 	}
 	if qb.projection != nil {
 		builder = builder.WithProjection(*qb.projection)
+		hasConditions = true
 	}
 
-	expr, err := builder.Build()
-	if err != nil {
-		return nil, "", err
+	// Se não há condições, não precisa construir expression
+	var expr expression.Expression
+	var err error
+
+	if hasConditions {
+		expr, err = builder.Build()
+		if err != nil {
+			return nil, "", err
+		}
 	}
 
 	if qb.isScan || qb.keyCond == nil {
@@ -174,16 +190,33 @@ func (qb *QueryBuilder[T]) Exec(ctx context.Context) ([]T, string, error) {
 
 func (qb *QueryBuilder[T]) execQuery(ctx context.Context, expr expression.Expression) ([]T, string, error) {
 	input := &dynamodb.QueryInput{
-		TableName:                 aws.String(qb.store.cfg.TableName),
-		IndexName:                 qb.indexName,
-		KeyConditionExpression:    expr.KeyCondition(),
-		FilterExpression:          expr.Filter(),
-		ProjectionExpression:      expr.Projection(),
-		ExpressionAttributeNames:  expr.Names(),
-		ExpressionAttributeValues: expr.Values(),
-		Limit:                     qb.limit,
-		ScanIndexForward:          qb.scanForward,
-		ExclusiveStartKey:         qb.lastKey,
+		TableName:         aws.String(qb.store.cfg.TableName),
+		IndexName:         qb.indexName,
+		Limit:             qb.limit,
+		ScanIndexForward:  qb.scanForward,
+		ExclusiveStartKey: qb.lastKey,
+	}
+
+	// Aplica as expressões apenas se existirem
+	if expr.KeyCondition() != nil {
+		input.KeyConditionExpression = expr.KeyCondition()
+		input.ExpressionAttributeNames = expr.Names()
+		input.ExpressionAttributeValues = expr.Values()
+	}
+	if expr.Filter() != nil {
+		input.FilterExpression = expr.Filter()
+		if input.ExpressionAttributeNames == nil {
+			input.ExpressionAttributeNames = expr.Names()
+		}
+		if input.ExpressionAttributeValues == nil {
+			input.ExpressionAttributeValues = expr.Values()
+		}
+	}
+	if expr.Projection() != nil {
+		input.ProjectionExpression = expr.Projection()
+		if input.ExpressionAttributeNames == nil {
+			input.ExpressionAttributeNames = expr.Names()
+		}
 	}
 
 	out, err := qb.store.client.Query(ctx, input)
@@ -195,13 +228,22 @@ func (qb *QueryBuilder[T]) execQuery(ctx context.Context, expr expression.Expres
 
 func (qb *QueryBuilder[T]) execScan(ctx context.Context, expr expression.Expression) ([]T, string, error) {
 	input := &dynamodb.ScanInput{
-		TableName:                 aws.String(qb.store.cfg.TableName),
-		FilterExpression:          expr.Filter(),
-		ProjectionExpression:      expr.Projection(),
-		ExpressionAttributeNames:  expr.Names(),
-		ExpressionAttributeValues: expr.Values(),
-		Limit:                     qb.limit,
-		ExclusiveStartKey:         qb.lastKey,
+		TableName:         aws.String(qb.store.cfg.TableName),
+		Limit:             qb.limit,
+		ExclusiveStartKey: qb.lastKey,
+	}
+
+	// Aplica as expressões apenas se existirem
+	if expr.Filter() != nil {
+		input.FilterExpression = expr.Filter()
+		input.ExpressionAttributeNames = expr.Names()
+		input.ExpressionAttributeValues = expr.Values()
+	}
+	if expr.Projection() != nil {
+		input.ProjectionExpression = expr.Projection()
+		if input.ExpressionAttributeNames == nil {
+			input.ExpressionAttributeNames = expr.Names()
+		}
 	}
 
 	out, err := qb.store.client.Scan(ctx, input)

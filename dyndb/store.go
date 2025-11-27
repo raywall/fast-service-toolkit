@@ -13,12 +13,12 @@ import (
 )
 
 type dynamoStore[T any] struct {
-	client *dynamodb.Client
+	client DynamoDBClient
 	cfg    TableConfig[T]
 }
 
 // New cria um store reutilizável
-func New[T any](client *dynamodb.Client, cfg TableConfig[T]) Store[T] {
+func New[T any](client DynamoDBClient, cfg TableConfig[T]) Store[T] {
 	return &dynamoStore[T]{
 		client: client,
 		cfg:    cfg,

@@ -85,16 +85,16 @@ package dyndb_test
 // 		TableName: "test-table",
 // 		HashKey:   "id",
 // 	}
-	
+
 // 	store := dyndb.New(client, cfg)
-	
+
 // 	// Verifica se store implementa a interface Store[TestItem]
 // 	var _ dyndb.Store[TestItem] = store
-	
+
 // 	// Testa que os métodos de query estão disponíveis
 // 	queryBuilder := store.Query()
 // 	assert.NotNil(t, queryBuilder)
-	
+
 // 	scanBuilder := store.Scan()
 // 	assert.NotNil(t, scanBuilder)
 // }
