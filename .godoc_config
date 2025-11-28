@@ -1,0 +1,36 @@
+{
+	"PkgHandler": {
+		"Pattern": "/fast-service-toolkit",
+		"StripPrefix": "/fast-service-toolkit",
+		"Include": [
+			"/src/github.com/raywall/fast-service-toolkit/*.go",
+			"/src/github.com/raywall/fast-service-toolkit/api/*.go",
+			"/src/github.com/raywall/fast-service-toolkit/dyndb/*.go",
+			"/src/github.com/raywall/fast-service-toolkit/envloader/*.go",
+			"/src/github.com/raywall/fast-service-toolkit/examples/api/*.go",
+			"/src/github.com/raywall/fast-service-toolkit/examples/envloader/*.go",
+			"/src/github.com/raywall/fast-service-toolkit/examples/users/repository/*.go",
+			"/src/github.com/raywall/fast-service-toolkit/examples/users/models/*.go",
+			"/src/github.com/raywall/fast-service-toolkit/examples/users/*.go"
+		],
+		"Exclude": [
+            "/src/github.com/raywall/fast-service-toolkit/*_test.go",
+            "/src/github.com/raywall/fast-service-toolkit/api/*_test.go",
+            "/src/github.com/raywall/fast-service-toolkit/dyndb/*_test.go",
+            "/src/github.com/raywall/fast-service-toolkit/envloader/*_test.go",
+            "/src/github.com/raywall/fast-service-toolkit/examples/api/*_test.go",
+            "/src/github.com/raywall/fast-service-toolkit/examples/envloader/*_test.go",
+            "/src/github.com/raywall/fast-service-toolkit/examples/users/repository/*_test.go",
+            "/src/github.com/raywall/fast-service-toolkit/examples/users/models/*_test.go",
+            "/src/github.com/raywall/fast-service-toolkit/examples/users/*_test.go"
+		],
+		"IgnoredSuffixes": [
+			"iface"
+		]
+	},
+	"Github": {
+		"Tag": "main",
+		"Repo": "/raywall/fast-service-toolkit",
+		"UseGithub": true
+	}
+}

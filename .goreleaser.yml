@@ -1,0 +1,40 @@
+# .goreleaser.yml
+version: 2
+
+# Opcional: defina o nome do projeto se necessário
+project_name: fast-service-toolkit
+
+builds:
+- id: fast-service-toolkit
+  main: ./examples/users/main.go
+  binary: fast-service-toolkit
+  env:
+  - CGO_ENABLED=0
+  goos:
+  - linux
+  - windows
+  - darwin
+  goarch:
+  - amd64
+  - arm64
+  - arm
+  skip: true
+
+release:
+  # Opcional: você pode remover a seção 'github' se o repositório 
+  # no qual você está executando a action for o 'raywall/fast-service-toolkit'.
+  # GoReleaser infere isso automaticamente.
+  name_template: "Release {{ .Tag }}"
+  github:
+    owner: raywall
+    name: fast-service-toolkit
+  make_latest: true
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
+    - 'Merge pull request'
+    - 'Merge branch'
