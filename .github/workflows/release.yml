@@ -41,17 +41,19 @@ jobs:
                   previous_version="${{ steps.previous_tag.outputs.previous_tag }}"
                   new_tag=""
 
-                  if [ "$previous_version" = "v0.0.0" ]; then
-                      # Se for a primeira tag (retornada como v0.0.0), defina como v1.0.0
+                  # Remove o 'v' inicial para facilitar a comparação numérica (ex: '0.0.8')
+                  version_without_v=${previous_version:1}
+
+                  # Divide a versão em Major, Minor, Patch
+                  IFS='.' read -r major minor patch <<< "$version_without_v"
+
+                  # Use o comando 'test' (ou '[ ]') para comparar o número da versão
+                  # Se Major for 0 (abrange v0.0.0, v0.0.8, etc.)
+                  if [ "$major" -lt "1" ]; then
+                      # Força a transição para a primeira versão estável
                       new_tag="v1.0.0"
                   else
-                      # Se já houver uma tag, incremente o patch
-                      # Remove o 'v' para processamento
-                      version_without_v=${previous_version:1}
-                      
-                      # Usamos IFS para separar Major, Minor, Patch
-                      IFS='.' read -r major minor patch <<< "$version_without_v"
-                      
+                      # Se a versão já for v1.x.x ou superior, incrementamos o patch
                       next_patch=$((patch + 1))
                       new_tag="v${major}.${minor}.${next_patch}"
                   fi
