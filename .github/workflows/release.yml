@@ -60,4 +60,4 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Request a Package Update
-              run: curl "https://proxy.golang.org/github.com/${{ github.repository }}/@${{ steps.create_tag.outputs.new_tag }}"
+              run: curl "https://proxy.golang.org/github.com/${{ github.repository }}/@v/${{ steps.create_tag.outputs.new_tag }}.info"
