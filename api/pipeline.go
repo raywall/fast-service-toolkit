@@ -1,3 +1,15 @@
+// Copyright 2025 Raywall Malheiros de Souza
+// Licensed under the Mozilla Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//	https://www.mozilla.org/en-US/MPL/2.0/
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 package api
 
 import (
@@ -82,13 +94,16 @@ type APIResult struct {
 // NewAPIPipeline cria uma nova instância do APIPipeline.
 //
 // Parâmetros:
-//   apis: O slice de APIConfig que define todo o fluxo do pipeline.
+//
+//	apis: O slice de APIConfig que define todo o fluxo do pipeline.
 //
 // Retorna:
-//   APIPipelineInterface: A instância configurada do pipeline, pronta para ser executada.
+//
+//	APIPipelineInterface: A instância configurada do pipeline, pronta para ser executada.
 //
 // Exemplo:
-//   p := NewAPIPipeline([]APIConfig{...})
+//
+//	p := NewAPIPipeline([]APIConfig{...})
 func NewAPIPipeline(apis []APIConfig) APIPipelineInterface {
 	return &APIPipeline{
 		apis:       apis,
@@ -106,14 +121,16 @@ func NewAPIPipeline(apis []APIConfig) APIPipelineInterface {
 // são coletados).
 //
 // Parâmetros:
-//   ctx: Contexto para controle de timeout ou cancelamento.
-//   input: Payload de entrada (atualmente não usado na lógica de dependência).
+//
+//	ctx: Contexto para controle de timeout ou cancelamento.
+//	input: Payload de entrada (atualmente não usado na lógica de dependência).
 //
 // Retorna:
-//   map[string]interface{}: Um mapa onde a chave é o nome da API e o valor
-//     é a resposta HTTP decodificada.
-//   error: Retorna um erro se o contexto for cancelado ou se uma API
-//     obrigatória (`Required`) falhar (erro 422).
+//
+//	map[string]interface{}: Um mapa onde a chave é o nome da API e o valor
+//	  é a resposta HTTP decodificada.
+//	error: Retorna um erro se o contexto for cancelado ou se uma API
+//	  obrigatória (`Required`) falhar (erro 422).
 //
 // Erros:
 //   - "contexto cancelado": Quando o `ctx.Done()` é disparado.
@@ -256,13 +273,15 @@ func (p *APIPipeline) Execute(ctx context.Context, input interface{}) (map[strin
 // e decodificar a resposta JSON.
 //
 // Parâmetros:
-//   ctx: Contexto de requisição.
-//   deps: Resultados das APIs dependentes (não utilizado no call, mas passível de uso para transformar o payload).
-//   client: Cliente HTTP.
+//
+//	ctx: Contexto de requisição.
+//	deps: Resultados das APIs dependentes (não utilizado no call, mas passível de uso para transformar o payload).
+//	client: Cliente HTTP.
 //
 // Retorna:
-//   map[string]interface{}: O corpo da resposta decodificado.
-//   error: Erros de rede, I/O, ou falha de marshalling/unmarshalling JSON.
+//
+//	map[string]interface{}: O corpo da resposta decodificado.
+//	error: Erros de rede, I/O, ou falha de marshalling/unmarshalling JSON.
 //
 // Erros:
 //   - "error marshalling to JSON": Falha ao serializar o corpo para JSON.

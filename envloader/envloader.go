@@ -1,5 +1,15 @@
-// Package envloader fornece um utilitário simples para carregar variáveis de
-// ambiente diretamente para campos de uma struct Go.
+// Copyright 2025 Raywall Malheiros de Souza
+// Licensed under the Mozilla Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//	https://www.mozilla.org/en-US/MPL/2.0/
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 package envloader
 
 import (
@@ -16,15 +26,18 @@ import (
 // o valor de "envDefault" será usado.
 //
 // Parâmetros:
-//   config: Um ponteiro para a struct que será preenchida. Deve ser um ponteiro para struct.
+//
+//	config: Um ponteiro para a struct que será preenchida. Deve ser um ponteiro para struct.
 //
 // Retorna:
-//   error: Retorna nil em caso de sucesso ou um erro tipado (`InvalidConfigError`,
-//     `FieldError`) se a operação falhar.
+//
+//	error: Retorna nil em caso de sucesso ou um erro tipado (`InvalidConfigError`,
+//	  `FieldError`) se a operação falhar.
 //
 // Exemplo:
-//   cfg := &Config{}
-//   err := Load(cfg)
+//
+//	cfg := &Config{}
+//	err := Load(cfg)
 //
 // Erros:
 //   - InvalidConfigError: Se 'config' não for um ponteiro para struct.
@@ -115,12 +128,14 @@ func loadStruct(val reflect.Value) error {
 // nativo do campo Go.
 //
 // Parâmetros:
-//   field: O campo Go (reflect.Value) a ser modificado.
-//   value: A string contendo o valor da variável de ambiente.
+//
+//	field: O campo Go (reflect.Value) a ser modificado.
+//	value: A string contendo o valor da variável de ambiente.
 //
 // Retorna:
-//   error: Retorna nil em caso de sucesso ou um erro se a conversão falhar,
-//     ou se o tipo do campo não for suportado (`UnsupportedTypeError`).
+//
+//	error: Retorna nil em caso de sucesso ou um erro se a conversão falhar,
+//	  ou se o tipo do campo não for suportado (`UnsupportedTypeError`).
 //
 // Erros:
 //   - UnsupportedTypeError: Se o `field.Kind()` não estiver listado no switch.
@@ -175,11 +190,13 @@ func setFieldValue(field reflect.Value, value string) error {
 // do programa é inaceitável.
 //
 // Parâmetros:
-//   config: Um ponteiro para a struct de configuração.
+//
+//	config: Um ponteiro para a struct de configuração.
 //
 // Exemplo:
-//   cfg := &Config{}
-//   MustLoad(cfg) // O programa termina se houver erro
+//
+//	cfg := &Config{}
+//	MustLoad(cfg) // O programa termina se houver erro
 func MustLoad(config interface{}) {
 	if err := Load(config); err != nil {
 		panic(err)
