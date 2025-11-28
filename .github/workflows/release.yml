@@ -38,13 +38,26 @@ jobs:
             - name: Increment Version and Create Tag
               id: create_tag
               run: |
-                  # Aqui você pode implementar sua lógica de incremento de versão.
-                  # Para um exemplo simples, vamos apenas adicionar um patch (o terceiro número).
                   previous_version="${{ steps.previous_tag.outputs.previous_tag }}"
-                  IFS='.' read -r major minor patch <<< "$previous_version"
-                  next_patch=$((patch + 1))
-                  new_tag="${major}.${minor}.${next_patch}"
+                  new_tag=""
+
+                  if [ "$previous_version" = "v0.0.0" ]; then
+                      # Se for a primeira tag (retornada como v0.0.0), defina como v1.0.0
+                      new_tag="v1.0.0"
+                  else
+                      # Se já houver uma tag, incremente o patch
+                      # Remove o 'v' para processamento
+                      version_without_v=${previous_version:1}
+                      
+                      # Usamos IFS para separar Major, Minor, Patch
+                      IFS='.' read -r major minor patch <<< "$version_without_v"
+                      
+                      next_patch=$((patch + 1))
+                      new_tag="v${major}.${minor}.${next_patch}"
+                  fi
+
                   echo "new_tag=$new_tag" >> $GITHUB_OUTPUT
+                  echo "Creating tag: $new_tag"
                   git tag "$new_tag"
                   git push --tags
               env:
