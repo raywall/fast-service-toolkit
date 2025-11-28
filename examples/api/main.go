@@ -160,7 +160,7 @@ func exemploComAutenticacao() {
 		ClientID:     "my-client-id",
 		ClientSecret: "my-client-secret",
 		Host:         "https://auth.example.com/oauth/token",
-		Httpmethod:   http.MethodPost,
+		HttpMethod:   http.MethodPost,
 	}
 
 	// Obtém o token (em produção, faça tratamento de erro adequado)

@@ -27,7 +27,7 @@ func TestGetToken_Success(t *testing.T) {
 		ClientID:     "test_client",
 		ClientSecret: "test_secret",
 		Host:         mockServer.URL,
-		Httpmethod:   http.MethodPost,
+		HttpMethod:   http.MethodPost,
 	}
 
 	// Execução do teste
@@ -65,7 +65,7 @@ func TestGetToken_InvalidResponse(t *testing.T) {
 		ClientID:     "test_client_id",
 		ClientSecret: "test_client_secret",
 		Host:         mockServer.URL,
-		Httpmethod:   http.MethodPost,
+		HttpMethod:   http.MethodPost,
 	}
 
 	_, err := tokenService.GetToken("test")

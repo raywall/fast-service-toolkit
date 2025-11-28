@@ -28,8 +28,8 @@ type TokenConfig struct {
 	ClientSecret string
 	// Host é a URL do endpoint de token.
 	Host string
-	// Httpmethod é o método HTTP (geralmente POST) para a requisição de token.
-	Httpmethod string
+	// HttpMethod é o método HTTP (geralmente POST) para a requisição de token.
+	HttpMethod string
 }
 
 // TokenService define os serviços para geração e gerenciamento de tokens STS.
@@ -45,10 +45,12 @@ type TokenService struct {
 // NewTokenService cria uma nova instância do TokenService.
 //
 // Retorna:
-//   *TokenService: A instância inicializada.
+//
+//	*TokenService: A instância inicializada.
 //
 // Exemplo:
-//   ts := NewTokenService()
+//
+//	ts := NewTokenService()
 func NewTokenService() *TokenService {
 	return &TokenService{
 		Configurations: make(map[string]TokenConfig),
@@ -62,14 +64,17 @@ func NewTokenService() *TokenService {
 // a partir da TokenConfig associada ao `tokenId`.
 //
 // Parâmetros:
-//   tokenId: O identificador da configuração de token a ser usada.
+//
+//	tokenId: O identificador da configuração de token a ser usada.
 //
 // Retorna:
-//   *string: O token de acesso (access_token) como um ponteiro para string, se obtido.
-//   error: Um erro se a configuração não for encontrada ou a requisição falhar.
+//
+//	*string: O token de acesso (access_token) como um ponteiro para string, se obtido.
+//	error: Um erro se a configuração não for encontrada ou a requisição falhar.
 //
 // Exemplo:
-//   token, err := ts.GetToken("api_oauth")
+//
+//	token, err := ts.GetToken("api_oauth")
 //
 // Erros:
 //   - ErrNotFound: Se o `tokenId` não estiver presente em `Configurations`.
@@ -87,7 +92,7 @@ func (t *TokenService) GetToken(tokenId string) (*string, error) {
 	formData.Set("client_id", token.ClientID)
 	encodedData := formData.Encode()
 
-	req, err := http.NewRequest(token.Httpmethod, token.Host, strings.NewReader(encodedData))
+	req, err := http.NewRequest(token.HttpMethod, token.Host, strings.NewReader(encodedData))
 	if err != nil {
 		return nil, err
 	}
