@@ -16,7 +16,7 @@ builds:
 
 release:
   name_template: "Release {{ .Tag }}"
-  # Garanta que estes campos estejam corretos
+  # Garanta que estes campos estejam corretos. 
   github:
     owner: raywall
     name: fast-service-toolkit
