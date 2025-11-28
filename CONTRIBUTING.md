@@ -1,6 +1,6 @@
-# Contributing to beego
+# Contributing to fast-service-toolkit
 
-beego is an open source project.
+fast-service-toolkit is an open source project.
 
 It is the work of hundreds of contributors. We appreciate your help!
 
@@ -30,12 +30,12 @@ do it in other way.
 ### Create issues
 
 Any significant improvement should be documented as [a GitHub
-issue](https://github.com/astaxie/beego/issues) before anybody
+issue](https://github.com/raywall/fast-service-toolkit/issues) before anybody
 starts working on it.
 
 Also when filing an issue, make sure to answer these five questions:
 
-- What version of beego are you using (bee version)?
+- What version of fast-service-toolkit are you using (bee version)?
 - What operating system and processor architecture are you using?
 - What did you do?
 - What did you expect to see?
@@ -49,4 +49,4 @@ never hurts to add a quick "+1" or "I have this problem too". This will
 help prioritize the most common problems and requests.
 
 Also if you don't know how to use it. please make sure you have read though
-the docs in http://beego.me/docs
+the docs in http://raysouz.me/docs
