@@ -1,30 +1,22 @@
-# .goreleaser.yml
+# .goreleaser.yml (Versão simplificada para apenas criar o release/tag no GitHub)
 version: 2
 
-# Opcional: defina o nome do projeto se necessário
-project_name: fast-service-toolkit
-
+# Ignora a parte de compilação de binários, pois é uma biblioteca
 builds:
 - id: fast-service-toolkit
-  main: ./examples/users/main.go
+  main: .
   binary: fast-service-toolkit
   env:
   - CGO_ENABLED=0
   goos:
   - linux
-  - windows
-  - darwin
   goarch:
   - amd64
-  - arm64
-  - arm
-  skip: true
+  skip: true # Garante que a compilação não ocorrerá
 
 release:
-  # Opcional: você pode remover a seção 'github' se o repositório 
-  # no qual você está executando a action for o 'raywall/fast-service-toolkit'.
-  # GoReleaser infere isso automaticamente.
   name_template: "Release {{ .Tag }}"
+  # Garanta que estes campos estejam corretos
   github:
     owner: raywall
     name: fast-service-toolkit
