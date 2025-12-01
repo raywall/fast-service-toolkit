@@ -22,9 +22,9 @@ import (
 
 func TestLoad_StringFields(t *testing.T) {
 	type Config struct {
-		Port     string `env:"PORT" envDefault:"8080"`
-		Host     string `env:"HOST" envDefault:"localhost"`
-		LogLevel string `env:"LOG_LEVEL" envDefault:"info"`
+		Port     string `env:"PORT" default:"8080"`
+		Host     string `env:"HOST" default:"localhost"`
+		LogLevel string `env:"LOG_LEVEL" default:"info"`
 	}
 
 	// Test with default values
@@ -57,10 +57,10 @@ func TestLoad_StringFields(t *testing.T) {
 
 func TestLoad_NumericFields(t *testing.T) {
 	type Config struct {
-		Port        int    `env:"PORT" envDefault:"8080"`
-		MaxConn     int32  `env:"MAX_CONNECTIONS" envDefault:"100"`
-		Timeout     int64  `env:"TIMEOUT" envDefault:"30"`
-		MaxFileSize uint64 `env:"MAX_FILE_SIZE" envDefault:"1048576"`
+		Port        int    `env:"PORT" default:"8080"`
+		MaxConn     int32  `env:"MAX_CONNECTIONS" default:"100"`
+		Timeout     int64  `env:"TIMEOUT" default:"30"`
+		MaxFileSize uint64 `env:"MAX_FILE_SIZE" default:"1048576"`
 	}
 
 	config := &Config{}
@@ -90,10 +90,10 @@ func TestLoad_NumericFields(t *testing.T) {
 
 func TestLoad_BoolFields(t *testing.T) {
 	type Config struct {
-		Debug    bool `env:"DEBUG" envDefault:"true"`
-		Enabled  bool `env:"ENABLED" envDefault:"false"`
-		FeatureX bool `env:"FEATURE_X" envDefault:"1"`
-		FeatureY bool `env:"FEATURE_Y" envDefault:"0"`
+		Debug    bool `env:"DEBUG" default:"true"`
+		Enabled  bool `env:"ENABLED" default:"false"`
+		FeatureX bool `env:"FEATURE_X" default:"1"`
+		FeatureY bool `env:"FEATURE_Y" default:"0"`
 	}
 
 	config := &Config{}
@@ -123,9 +123,9 @@ func TestLoad_BoolFields(t *testing.T) {
 
 func TestLoad_FloatFields(t *testing.T) {
 	type Config struct {
-		Ratio    float32 `env:"RATIO" envDefault:"1.5"`
-		Price    float64 `env:"PRICE" envDefault:"99.99"`
-		Discount float64 `env:"DISCOUNT" envDefault:"0.1"`
+		Ratio    float32 `env:"RATIO" default:"1.5"`
+		Price    float64 `env:"PRICE" default:"99.99"`
+		Discount float64 `env:"DISCOUNT" default:"0.1"`
 	}
 
 	config := &Config{}
@@ -151,9 +151,9 @@ func TestLoad_FloatFields(t *testing.T) {
 
 func TestLoad_WithoutEnvTag(t *testing.T) {
 	type Config struct {
-		Port     string `env:"PORT" envDefault:"8080"`
+		Port     string `env:"PORT" default:"8080"`
 		Host     string // Sem tag env - deve ser ignorado
-		LogLevel string `env:"LOG_LEVEL" envDefault:"info"`
+		LogLevel string `env:"LOG_LEVEL" default:"info"`
 	}
 
 	config := &Config{
@@ -169,7 +169,7 @@ func TestLoad_WithoutEnvTag(t *testing.T) {
 
 func TestLoad_EmptyEnvVar(t *testing.T) {
 	type Config struct {
-		Port    string `env:"PORT" envDefault:"8080"`
+		Port    string `env:"PORT" default:"8080"`
 		Timeout string `env:"TIMEOUT"` // Sem default - deve ficar vazio
 	}
 
@@ -183,7 +183,7 @@ func TestLoad_EmptyEnvVar(t *testing.T) {
 
 func TestLoad_EnvironmentOverridesDefault(t *testing.T) {
 	type Config struct {
-		Port string `env:"PORT" envDefault:"8080"`
+		Port string `env:"PORT" default:"8080"`
 	}
 
 	os.Setenv("PORT", "9090")
@@ -214,7 +214,7 @@ func TestLoad_InvalidConfig(t *testing.T) {
 
 func TestLoad_ConversionErrors(t *testing.T) {
 	type Config struct {
-		Port int `env:"PORT" envDefault:"not-a-number"`
+		Port int `env:"PORT" default:"not-a-number"`
 	}
 
 	config := &Config{}
@@ -225,7 +225,7 @@ func TestLoad_ConversionErrors(t *testing.T) {
 
 func TestMustLoad(t *testing.T) {
 	type Config struct {
-		Port string `env:"PORT" envDefault:"8080"`
+		Port string `env:"PORT" default:"8080"`
 	}
 
 	// Deve funcionar sem panic
@@ -243,25 +243,25 @@ func TestMustLoad(t *testing.T) {
 
 func TestLoad_ComplexStruct(t *testing.T) {
 	type DatabaseConfig struct {
-		Host     string `env:"DB_HOST" envDefault:"localhost"`
-		Port     int    `env:"DB_PORT" envDefault:"5432"`
-		Username string `env:"DB_USER" envDefault:"postgres"`
-		Password string `env:"DB_PASS" envDefault:""`
-		SSLMode  bool   `env:"DB_SSL" envDefault:"true"`
+		Host     string `env:"DB_HOST" default:"localhost"`
+		Port     int    `env:"DB_PORT" default:"5432"`
+		Username string `env:"DB_USER" default:"postgres"`
+		Password string `env:"DB_PASS" default:""`
+		SSLMode  bool   `env:"DB_SSL" default:"true"`
 	}
 
 	type ServerConfig struct {
-		Port        int    `env:"SERVER_PORT" envDefault:"8080"`
-		Host        string `env:"SERVER_HOST" envDefault:"0.0.0.0"`
-		Debug       bool   `env:"DEBUG" envDefault:"false"`
-		Environment string `env:"ENV" envDefault:"production"`
+		Port        int    `env:"SERVER_PORT" default:"8080"`
+		Host        string `env:"SERVER_HOST" default:"0.0.0.0"`
+		Debug       bool   `env:"DEBUG" default:"false"`
+		Environment string `env:"ENV" default:"production"`
 	}
 
 	type AppConfig struct {
 		Server   ServerConfig
 		Database DatabaseConfig
-		Name     string `env:"APP_NAME" envDefault:"MyApp"`
-		Version  string `env:"APP_VERSION" envDefault:"1.0.0"`
+		Name     string `env:"APP_NAME" default:"MyApp"`
+		Version  string `env:"APP_VERSION" default:"1.0.0"`
 	}
 
 	// Set some environment variables
