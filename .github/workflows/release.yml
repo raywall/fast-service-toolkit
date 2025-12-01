@@ -29,7 +29,7 @@ jobs:
         needs: run-tests
         uses: ./.github/workflows/3-create-version-tag.yml
         with:
-            git_user_name: "Raywall Malheiros"
+            git_user_name: "Raywall Malheiros de Souza"
             git_user_email: "raywall.malheiros@gmail.com"
         secrets: inherit
 
