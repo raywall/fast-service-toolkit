@@ -36,7 +36,7 @@ jobs:
     release-go:
         if: github.event.pull_request.merged == true
         needs: create-version-tag
-        uses: ./.github/workflows/4-release-go.yml
+        uses: ./.github/workflows/4-publish-release.yml
         with:
             go_version: "1.25.4"
             new_tag: ${{ needs.create-version-tag.outputs.new_tag }}
