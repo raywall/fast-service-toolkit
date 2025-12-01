@@ -87,7 +87,7 @@ func loadStruct(val reflect.Value) error {
 
 		// Obtém as tags apenas para campos não-struct
 		envTag := fieldType.Tag.Get("env")
-		defaultTag := fieldType.Tag.Get("envDefault")
+		defaultTag := fieldType.Tag.Get("default")
 
 		// Se não tem tag env, ignora o campo
 		if envTag == "" {
