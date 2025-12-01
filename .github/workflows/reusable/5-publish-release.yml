@@ -1,0 +1,63 @@
+name: Publish Release
+
+on:
+    workflow_call:
+        inputs:
+            new_tag:
+                required: true
+                type: string
+                description: "New version tag to release"
+            previous_tag:
+                required: false
+                type: string
+                description: "Previous version tag"
+
+        outputs:
+            release_created:
+                description: "Whether release was created"
+                value: ${{ jobs.publish.outputs.release_created }}
+            proxy_requested:
+                description: "Whether proxy update was requested"
+                value: ${{ jobs.publish.outputs.proxy_requested }}
+
+jobs:
+    publish:
+        runs-on: ubuntu-latest
+        outputs:
+            release_created: ${{ steps.goreleaser.outputs.release_created }}
+            proxy_requested: ${{ steps.proxy.outputs.requested }}
+
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Set Go Version
+              uses: actions/setup-go@v4
+              with:
+                  go-version: 1.25.4
+
+            - name: Create Release with GoReleaser
+              id: goreleaser
+              uses: goreleaser/goreleaser-action@v6
+              with:
+                  distribution: goreleaser
+                  version: "latest"
+                  args: release --clean
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Request a Package Update
+              id: proxy
+              run: |
+                  echo "Requesting package update for ${{ inputs.new_tag }}"
+                  curl -s "https://proxy.golang.org/github.com/${{ github.repository }}/@v/${{ inputs.new_tag }}.info"
+
+                  if [ $? -eq 0 ]; then
+                    echo "requested=true" >> $GITHUB_OUTPUT
+                    echo "✅ Package update requested"
+                  else
+                    echo "requested=false" >> $GITHUB_OUTPUT
+                    echo "⚠️ Failed to request package update"
+                  fi
