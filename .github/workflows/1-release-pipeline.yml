@@ -11,7 +11,7 @@ permissions:
 jobs:
     setup:
         if: github.event.pull_request.merged == true
-        uses: ./.github/workflows/reusable/1-setup-go.yml
+        uses: ./.github/workflows/reusable/2-setup-go.yml
         with:
             go_version: "1.25.4"
         secrets: inherit
@@ -19,7 +19,7 @@ jobs:
     run-tests:
         if: github.event.pull_request.merged == true
         needs: setup
-        uses: ./.github/workflows/reusable/2-run-tests.yml
+        uses: ./.github/workflows/reusable/3-run-tests.yml
         with:
             cache_key: ${{ needs.setup.outputs.cache_key }}
         secrets: inherit
@@ -27,7 +27,7 @@ jobs:
     create-version-tag:
         if: github.event.pull_request.merged == true
         needs: run-tests
-        uses: ./.github/workflows/reusable/3-create-version-tag.yml
+        uses: ./.github/workflows/reusable/4-create-version-tag.yml
         with:
             git_user_name: "Raywall Malheiros"
             git_user_email: "raywall.malheiros@gmail.com"
@@ -37,7 +37,7 @@ jobs:
     release-go:
         if: github.event.pull_request.merged == true
         needs: create-version-tag
-        uses: ./.github/workflows/reusable/4-release-go.yml
+        uses: ./.github/workflows/reusable/5-release-go.yml
         with:
             go_version: "1.25.4"
             new_tag: ${{ needs.create-version-tag.outputs.new_tag }}
