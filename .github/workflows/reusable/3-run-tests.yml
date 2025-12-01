@@ -1,0 +1,69 @@
+name: Run Go Tests
+
+on:
+  workflow_call:
+    inputs:
+      cache_key:
+        required: true
+        type: string
+        description: "Cache key for Go modules"
+
+    outputs:
+      test_status:
+        description: "Status of test execution"
+        value: ${{ jobs.test.outputs.test_status }}
+      coverage_summary:
+        description: "Test coverage summary"
+        value: ${{ jobs.test.outputs.coverage_summary }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    outputs:
+      test_status: ${{ steps.run-tests.outputs.status }}
+      coverage_summary: ${{ steps.coverage.outputs.summary }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set Go Version
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.25.4
+
+      - name: Restore Go Modules Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ inputs.cache_key }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Run Unit Tests
+        id: run-tests
+        run: |
+          echo "Running unit tests..."
+          go test ./... -v -race -coverprofile=coverage.out -covermode=atomic
+
+          # Verifica o exit code dos testes
+          if [ $? -ne 0 ]; then
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "❌ Tests failed! Deployment aborted."
+            exit 1
+          fi
+
+          echo "status=passed" >> $GITHUB_OUTPUT
+          echo "✅ All tests passed successfully!"
+
+      - name: Display Test Coverage
+        id: coverage
+        run: |
+          echo "Test Coverage Summary:"
+          summary=$(go tool cover -func=coverage.out | tail -n 1)
+          echo "$summary"
+          echo "summary=$summary" >> $GITHUB_OUTPUT

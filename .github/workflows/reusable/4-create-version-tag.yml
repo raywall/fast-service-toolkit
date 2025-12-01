@@ -1,0 +1,78 @@
+name: Create Version Tag
+
+on:
+  workflow_call:
+    inputs:
+      git_user_name:
+        required: false
+        type: string
+        default: "GitHub Actions"
+        description: "Git user name for commits"
+      git_user_email:
+        required: false
+        type: string
+        default: "actions@github.com"
+        description: "Git user email for commits"
+
+    outputs:
+      new_tag:
+        description: "New version tag created"
+        value: ${{ jobs.version.outputs.new_tag }}
+      previous_tag:
+        description: "Previous version tag"
+        value: ${{ jobs.version.outputs.previous_tag }}
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      new_tag: ${{ steps.create-tag.outputs.new_tag }}
+      previous_tag: ${{ steps.previous-tag.outputs.previous_tag }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set Git Identity
+        run: |
+          git config --global user.name "${{ inputs.git_user_name }}"
+          git config --global user.email "${{ inputs.git_user_email }}"
+
+      - name: Get Previous Tag
+        id: previous-tag
+        run: |
+          previous_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "previous_tag=$previous_tag" >> $GITHUB_OUTPUT
+          echo "Previous tag: $previous_tag"
+
+      - name: Increment Version and Create Tag
+        id: create-tag
+        run: |
+          previous_version="${{ steps.previous-tag.outputs.previous_tag }}"
+          new_tag=""
+
+          # Remove o 'v' inicial para facilitar a comparação numérica (ex: '0.0.8')
+          version_without_v=${previous_version:1}
+
+          # Divide a versão em Major, Minor, Patch
+          IFS='.' read -r major minor patch <<< "$version_without_v"
+
+          # Use o comando 'test' (ou '[ ]') para comparar o número da versão
+          # Se Major for 0 (abrange v0.0.0, v0.0.8, etc.)
+          if [ "$major" -lt "1" ]; then
+              # Força a transição para a primeira versão estável
+              new_tag="v1.0.0"
+          else
+              # Se a versão já for v1.x.x ou superior, incrementamos o patch
+              next_patch=$((patch + 1))
+              new_tag="v${major}.${minor}.${next_patch}"
+          fi
+
+          echo "new_tag=$new_tag" >> $GITHUB_OUTPUT
+          echo "Creating tag: $new_tag"
+          git tag "$new_tag"
+          git push --tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

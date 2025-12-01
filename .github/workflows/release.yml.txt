@@ -1,0 +1,109 @@
+# name: Release
+
+# on:
+#     pull_request:
+#         types: [closed]
+#         branches: [main]
+
+# permissions:
+#     contents: write
+
+# jobs:
+#     release:
+#         if: github.event.pull_request.merged == true
+#         runs-on: ubuntu-latest
+
+#         steps:
+#             - name: Checkout Code
+#               uses: actions/checkout@v2
+#               with:
+#                   fetch-depth: 0
+
+#             - name: Set Go Version
+#               uses: actions/setup-go@v2
+#               with:
+#                   go-version: 1.25.4
+
+#             - name: Cache Go Modules
+#               uses: actions/cache@v3
+#               with:
+#                   path: |
+#                       ~/.cache/go-build
+#                       ~/go/pkg/mod
+#                   key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+#                   restore-keys: |
+#                       ${{ runner.os }}-go-
+
+#             - name: Download Dependencies
+#               run: go mod download
+
+#             - name: Run Unit Tests
+#               run: |
+#                   echo "Running unit tests..."
+#                   go test ./... -v -race -coverprofile=coverage.out -covermode=atomic
+
+#                   # Verifica o exit code dos testes
+#                   if [ $? -ne 0 ]; then
+#                       echo "❌ Tests failed! Deployment aborted."
+#                       exit 1
+#                   fi
+
+#                   echo "✅ All tests passed successfully!"
+
+#             - name: Display Test Coverage
+#               run: |
+#                   echo "Test Coverage Summary:"
+#                   go tool cover -func=coverage.out | tail -n 1
+
+#             - name: Set Git Identity
+#               run: |
+#                   git config --global user.name "Raywall Malheiros"
+#                   git config --global user.email "raywall.malheiros@gmail.com"
+
+#             - name: Get Previous Tag
+#               id: previous_tag
+#               run: |
+#                   previous_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+#                   echo "previous_tag=$previous_tag" >> $GITHUB_OUTPUT
+
+#             - name: Increment Version and Create Tag
+#               id: create_tag
+#               run: |
+#                   previous_version="${{ steps.previous_tag.outputs.previous_tag }}"
+#                   new_tag=""
+
+#                   # Remove o 'v' inicial para facilitar a comparação numérica (ex: '0.0.8')
+#                   version_without_v=${previous_version:1}
+
+#                   # Divide a versão em Major, Minor, Patch
+#                   IFS='.' read -r major minor patch <<< "$version_without_v"
+
+#                   # Use o comando 'test' (ou '[ ]') para comparar o número da versão
+#                   # Se Major for 0 (abrange v0.0.0, v0.0.8, etc.)
+#                   if [ "$major" -lt "1" ]; then
+#                       # Força a transição para a primeira versão estável
+#                       new_tag="v1.0.0"
+#                   else
+#                       # Se a versão já for v1.x.x ou superior, incrementamos o patch
+#                       next_patch=$((patch + 1))
+#                       new_tag="v${major}.${minor}.${next_patch}"
+#                   fi
+
+#                   echo "new_tag=$new_tag" >> $GITHUB_OUTPUT
+#                   echo "Creating tag: $new_tag"
+#                   git tag "$new_tag"
+#                   git push --tags
+#               env:
+#                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#             - name: Create Release with GoReleaser
+#               uses: goreleaser/goreleaser-action@v6
+#               with:
+#                   distribution: goreleaser
+#                   version: "latest"
+#                   args: release --clean
+#               env:
+#                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#             - name: Request a Package Update
+#               run: curl "https://proxy.golang.org/github.com/${{ github.repository }}/@v/${{ steps.create_tag.outputs.new_tag }}.info"
