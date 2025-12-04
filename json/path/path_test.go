@@ -1,4 +1,4 @@
-package tools
+package path
 
 import (
 	"encoding/json"
