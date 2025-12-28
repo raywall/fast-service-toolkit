@@ -1,4 +1,4 @@
-// Package dynamodb_quick_service fornece um conjunto de utilitários e abstrações
+// Package fast_service_toolkit fornece um conjunto de utilitários e abstrações
 // para acelerar o desenvolvimento de serviços backend em Go, focados em
 // operações robustas com DynamoDB, carregamento de configuração e gerenciamento
 // de microserviços.
@@ -80,4 +80,4 @@
 //		}
 //		log.Printf("Item: %v", item)
 //	}
-package dynamodb_quick_service
+package fast_service_toolkit
