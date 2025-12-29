@@ -18,8 +18,7 @@ const (
 
 var (
 	ErrEmptyCustomMethodName = errors.New("empty custom service method name")
-	ErrMethodNameNotFound = errors.New("method name not found")
-
+	ErrMethodNameNotFound    = errors.New("method name not found")
 )
 
 // EasyService centralizes business logic and data validation
@@ -31,7 +30,7 @@ type EasyService[T any] struct {
 	hooks                *Hooks[T]
 }
 
-// Hooks stores the data validations and business logic registered for 
+// Hooks stores the data validations and business logic registered for
 // execution before creates and updates
 type Hooks[T any] struct {
 	BeforeCreate []BeforeSaveHook[T]
@@ -44,7 +43,7 @@ type Hooks[T any] struct {
 type BeforeSaveHook[T any] func(ctx context.Context, item *T, existing *T) error
 
 // CustomServiceMethod allows you to inject a custom method
-type CustomServiceMethod[T any] func(ctx context.Context, args ...any) (*T, error)
+type CustomServiceMethod[T any] func(ctx context.Context, repo *EasyRepository[T], args ...any) (*T, error)
 
 // NewService creates a new EasyService instance with a default validator and configured repository
 func NewService[T any](client *dynamodb.Client, tableConfig dyndb.TableConfig[T]) (*EasyService[T], error) {
@@ -164,7 +163,7 @@ func (s *EasyService[T]) RunCustomServiceMethod(name string, args ...any) (*T, e
 		return nil, ErrMethodNameNotFound
 	}
 	if fn, ok := s.customServiceMethods[name]; ok {
-		return fn(context.Background(), args...)
+		return fn(context.Background(), s.repo, args...)
 	}
 	return nil, nil
 }
