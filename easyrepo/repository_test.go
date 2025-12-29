@@ -17,6 +17,6 @@ func TestNewRepository(t *testing.T) {
 	repo := NewRepository(nil, config)
 
 	assert.NotNil(t, repo)
-	assert.Equal(t, "TestTable", repo.config.TableName)
-	assert.NotNil(t, repo.store)
+	assert.Equal(t, "TestTable", repo.Config.TableName)
+	assert.NotNil(t, repo.Store)
 }

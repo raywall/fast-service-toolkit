@@ -15,11 +15,11 @@ type Extrator struct {
 // NovoExtrator cria uma nova instância do extrator a partir de bytes JSON
 func NovoExtrator(jsonBytes []byte) (*Extrator, error) {
 	var data map[string]interface{}
-	
+
 	if err := json.Unmarshal(jsonBytes, &data); err != nil {
 		return nil, fmt.Errorf("erro ao fazer parse do JSON: %w", err)
 	}
-	
+
 	return &Extrator{data: data}, nil
 }
 
@@ -39,18 +39,18 @@ func NovoExtrotorFromMap(data map[string]interface{}) *Extrator {
 func (e *Extrator) Extrair(caminho string) (interface{}, error) {
 	// Remove espaços em branco
 	caminho = strings.TrimSpace(caminho)
-	
+
 	// Se o caminho estiver vazio, retorna o objeto completo
 	if caminho == "" {
 		return e.data, nil
 	}
-	
+
 	// Divide o caminho em partes
 	partes := parseCaminho(caminho)
-	
+
 	// Navega pela estrutura
 	var atual interface{} = e.data
-	
+
 	for i, parte := range partes {
 		// Verifica se é acesso a array
 		if parte.isArray {
@@ -64,16 +64,16 @@ func (e *Extrator) Extrair(caminho string) (interface{}, error) {
 			if !ok {
 				return nil, fmt.Errorf("esperado objeto no caminho '%s', mas encontrou %T", construirCaminhoAteAqui(partes, i), atual)
 			}
-			
+
 			valor, existe := m[parte.campo]
 			if !existe {
 				return nil, fmt.Errorf("campo '%s' não encontrado no caminho '%s'", parte.campo, construirCaminhoAteAqui(partes, i+1))
 			}
-			
+
 			atual = valor
 		}
 	}
-	
+
 	return atual, nil
 }
 
@@ -83,7 +83,7 @@ func (e *Extrator) ExtrairString(caminho string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	switch v := valor.(type) {
 	case string:
 		return v, nil
@@ -100,7 +100,7 @@ func (e *Extrator) ExtrairInt(caminho string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	
+
 	switch v := valor.(type) {
 	case float64:
 		return int(v), nil
@@ -121,7 +121,7 @@ func (e *Extrator) ExtrairFloat(caminho string) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	
+
 	switch v := valor.(type) {
 	case float64:
 		return v, nil
@@ -144,7 +144,7 @@ func (e *Extrator) ExtrairBool(caminho string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	
+
 	switch v := valor.(type) {
 	case bool:
 		return v, nil
@@ -161,12 +161,12 @@ func (e *Extrator) ExtrairArray(caminho string) ([]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	arr, ok := valor.([]interface{})
 	if !ok {
 		return nil, fmt.Errorf("valor em '%s' não é um array, encontrado %T", caminho, valor)
 	}
-	
+
 	return arr, nil
 }
 
@@ -176,12 +176,12 @@ func (e *Extrator) ExtrairObjeto(caminho string) (map[string]interface{}, error)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	obj, ok := valor.(map[string]interface{})
 	if !ok {
 		return nil, fmt.Errorf("valor em '%s' não é um objeto, encontrado %T", caminho, valor)
 	}
-	
+
 	return obj, nil
 }
 
@@ -203,33 +203,33 @@ type parteCaminho struct {
 // parseCaminho converte uma string de caminho em partes estruturadas
 func parseCaminho(caminho string) []parteCaminho {
 	var partes []parteCaminho
-	
+
 	// Divide por pontos, mas preserva arrays
 	segmentos := strings.Split(caminho, ".")
-	
+
 	for _, segmento := range segmentos {
 		if segmento == "" {
 			continue
 		}
-		
+
 		// Verifica se tem acesso a array
 		if strings.Contains(segmento, "[") {
 			// Exemplo: "cursos[0]" ou apenas "[0]"
 			abreBracket := strings.Index(segmento, "[")
 			fechaBracket := strings.Index(segmento, "]")
-			
+
 			if fechaBracket == -1 {
 				// Bracket não fechado, trata como campo normal
 				partes = append(partes, parteCaminho{campo: segmento})
 				continue
 			}
-			
+
 			// Extrai o nome do campo (se existir)
 			nomeCampo := segmento[:abreBracket]
 			if nomeCampo != "" {
 				partes = append(partes, parteCaminho{campo: nomeCampo})
 			}
-			
+
 			// Extrai o índice
 			indiceStr := segmento[abreBracket+1 : fechaBracket]
 			indice, err := strconv.Atoi(indiceStr)
@@ -237,12 +237,12 @@ func parseCaminho(caminho string) []parteCaminho {
 				// Índice inválido, ignora
 				continue
 			}
-			
+
 			partes = append(partes, parteCaminho{
 				isArray: true,
 				indice:  indice,
 			})
-			
+
 			// Verifica se há algo após o bracket
 			restoSegmento := segmento[fechaBracket+1:]
 			if restoSegmento != "" {
@@ -254,7 +254,7 @@ func parseCaminho(caminho string) []parteCaminho {
 			partes = append(partes, parteCaminho{campo: segmento})
 		}
 	}
-	
+
 	return partes
 }
 
@@ -264,37 +264,37 @@ func navegarArray(atual interface{}, parte parteCaminho, todasPartes []parteCami
 	if !ok {
 		return nil
 	}
-	
+
 	if parte.indice < 0 || parte.indice >= len(arr) {
 		return nil
 	}
-	
+
 	return arr[parte.indice]
 }
 
 // construirCaminhoAteAqui reconstrói o caminho até um determinado índice (para mensagens de erro)
 func construirCaminhoAteAqui(partes []parteCaminho, ate int) string {
 	var builder strings.Builder
-	
+
 	for i := 0; i < ate && i < len(partes); i++ {
 		if i > 0 && !partes[i].isArray {
 			builder.WriteString(".")
 		}
-		
+
 		if partes[i].isArray {
 			builder.WriteString(fmt.Sprintf("[%d]", partes[i].indice))
 		} else {
 			builder.WriteString(partes[i].campo)
 		}
 	}
-	
+
 	return builder.String()
 }
 
 // ExtrairMultiplos extrai múltiplos caminhos de uma só vez
 func (e *Extrator) ExtrairMultiplos(caminhos ...string) (map[string]interface{}, error) {
 	resultado := make(map[string]interface{})
-	
+
 	for _, caminho := range caminhos {
 		valor, err := e.Extrair(caminho)
 		if err != nil {
@@ -302,7 +302,7 @@ func (e *Extrator) ExtrairMultiplos(caminhos ...string) (map[string]interface{},
 		}
 		resultado[caminho] = valor
 	}
-	
+
 	return resultado, nil
 }
 
