@@ -8,6 +8,7 @@ O objetivo deste pacote é reduzir o boilerplate em microserviços Go, entregand
   - Integração simplificada com o toolkit dyndb.
 
 Exemplo de uso:
+
 	type User struct {
 		ID    string `validate:"required"`
 		Email string `validate:"required,email"`

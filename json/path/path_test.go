@@ -30,7 +30,7 @@ func TestNovoExtrator(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Erro ao criar extrator: %v", err)
 	}
-	
+
 	if extrator == nil {
 		t.Fatal("Extrator não deveria ser nil")
 	}
@@ -38,7 +38,7 @@ func TestNovoExtrator(t *testing.T) {
 
 func TestNovoExtrotorJSONInvalido(t *testing.T) {
 	jsonInvalido := []byte(`{nome: jose}`)
-	
+
 	_, err := NovoExtrator(jsonInvalido)
 	if err == nil {
 		t.Fatal("Deveria retornar erro para JSON inválido")
@@ -47,12 +47,12 @@ func TestNovoExtrotorJSONInvalido(t *testing.T) {
 
 func TestExtrairCampoSimples(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	valor, err := extrator.Extrair("nome")
 	if err != nil {
 		t.Fatalf("Erro ao extrair nome: %v", err)
 	}
-	
+
 	if valor != "jose" {
 		t.Errorf("Esperado 'jose', obtido '%v'", valor)
 	}
@@ -60,12 +60,12 @@ func TestExtrairCampoSimples(t *testing.T) {
 
 func TestExtrairNumero(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	valor, err := extrator.Extrair("idade")
 	if err != nil {
 		t.Fatalf("Erro ao extrair idade: %v", err)
 	}
-	
+
 	if valor != float64(17) {
 		t.Errorf("Esperado 17, obtido %v", valor)
 	}
@@ -73,12 +73,12 @@ func TestExtrairNumero(t *testing.T) {
 
 func TestExtrairBooleano(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	valor, err := extrator.Extrair("ativo")
 	if err != nil {
 		t.Fatalf("Erro ao extrair ativo: %v", err)
 	}
-	
+
 	if valor != true {
 		t.Errorf("Esperado true, obtido %v", valor)
 	}
@@ -86,17 +86,17 @@ func TestExtrairBooleano(t *testing.T) {
 
 func TestExtrairObjetoCompleto(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	valor, err := extrator.Extrair("dados_profissionais")
 	if err != nil {
 		t.Fatalf("Erro ao extrair dados_profissionais: %v", err)
 	}
-	
+
 	obj, ok := valor.(map[string]interface{})
 	if !ok {
 		t.Fatalf("Esperado map[string]interface{}, obtido %T", valor)
 	}
-	
+
 	if obj["empregador"] != "itau" {
 		t.Errorf("Esperado empregador 'itau', obtido '%v'", obj["empregador"])
 	}
@@ -104,12 +104,12 @@ func TestExtrairObjetoCompleto(t *testing.T) {
 
 func TestExtrairCampoAninhado(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	valor, err := extrator.Extrair("dados_profissionais.empregador")
 	if err != nil {
 		t.Fatalf("Erro ao extrair empregador: %v", err)
 	}
-	
+
 	if valor != "itau" {
 		t.Errorf("Esperado 'itau', obtido '%v'", valor)
 	}
@@ -117,12 +117,12 @@ func TestExtrairCampoAninhado(t *testing.T) {
 
 func TestExtrairCampoTresNiveis(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	valor, err := extrator.Extrair("dados_profissionais.cargo.titulo")
 	if err != nil {
 		t.Fatalf("Erro ao extrair titulo: %v", err)
 	}
-	
+
 	if valor != "Desenvolvedor" {
 		t.Errorf("Esperado 'Desenvolvedor', obtido '%v'", valor)
 	}
@@ -130,17 +130,17 @@ func TestExtrairCampoTresNiveis(t *testing.T) {
 
 func TestExtrairArrayCompleto(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	valor, err := extrator.Extrair("cursos")
 	if err != nil {
 		t.Fatalf("Erro ao extrair cursos: %v", err)
 	}
-	
+
 	arr, ok := valor.([]interface{})
 	if !ok {
 		t.Fatalf("Esperado []interface{}, obtido %T", valor)
 	}
-	
+
 	if len(arr) != 2 {
 		t.Errorf("Esperado array com 2 elementos, obtido %d", len(arr))
 	}
@@ -148,17 +148,17 @@ func TestExtrairArrayCompleto(t *testing.T) {
 
 func TestExtrairElementoArray(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	valor, err := extrator.Extrair("cursos[0]")
 	if err != nil {
 		t.Fatalf("Erro ao extrair cursos[0]: %v", err)
 	}
-	
+
 	obj, ok := valor.(map[string]interface{})
 	if !ok {
 		t.Fatalf("Esperado map[string]interface{}, obtido %T", valor)
 	}
-	
+
 	if obj["nome"] != "informatica" {
 		t.Errorf("Esperado 'informatica', obtido '%v'", obj["nome"])
 	}
@@ -166,12 +166,12 @@ func TestExtrairElementoArray(t *testing.T) {
 
 func TestExtrairCampoDeElementoArray(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	valor, err := extrator.Extrair("cursos[1].nome")
 	if err != nil {
 		t.Fatalf("Erro ao extrair cursos[1].nome: %v", err)
 	}
-	
+
 	if valor != "digitacao" {
 		t.Errorf("Esperado 'digitacao', obtido '%v'", valor)
 	}
@@ -179,12 +179,12 @@ func TestExtrairCampoDeElementoArray(t *testing.T) {
 
 func TestExtrairArraySimples(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	valor, err := extrator.Extrair("tags[0]")
 	if err != nil {
 		t.Fatalf("Erro ao extrair tags[0]: %v", err)
 	}
-	
+
 	if valor != "golang" {
 		t.Errorf("Esperado 'golang', obtido '%v'", valor)
 	}
@@ -192,7 +192,7 @@ func TestExtrairArraySimples(t *testing.T) {
 
 func TestExtrairCampoInexistente(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	_, err := extrator.Extrair("campo_inexistente")
 	if err == nil {
 		t.Fatal("Deveria retornar erro para campo inexistente")
@@ -201,7 +201,7 @@ func TestExtrairCampoInexistente(t *testing.T) {
 
 func TestExtrairIndiceForaDoLimite(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	_, err := extrator.Extrair("cursos[10]")
 	if err == nil {
 		t.Fatal("Deveria retornar erro para índice fora do limite")
@@ -210,7 +210,7 @@ func TestExtrairIndiceForaDoLimite(t *testing.T) {
 
 func TestExtrairIndiceNegativo(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	_, err := extrator.Extrair("cursos[-1]")
 	if err == nil {
 		t.Fatal("Deveria retornar erro para índice negativo")
@@ -219,12 +219,12 @@ func TestExtrairIndiceNegativo(t *testing.T) {
 
 func TestExtrairString(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	valor, err := extrator.ExtrairString("nome")
 	if err != nil {
 		t.Fatalf("Erro ao extrair string: %v", err)
 	}
-	
+
 	if valor != "jose" {
 		t.Errorf("Esperado 'jose', obtido '%s'", valor)
 	}
@@ -232,12 +232,12 @@ func TestExtrairString(t *testing.T) {
 
 func TestExtrairInt(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	valor, err := extrator.ExtrairInt("idade")
 	if err != nil {
 		t.Fatalf("Erro ao extrair int: %v", err)
 	}
-	
+
 	if valor != 17 {
 		t.Errorf("Esperado 17, obtido %d", valor)
 	}
@@ -245,12 +245,12 @@ func TestExtrairInt(t *testing.T) {
 
 func TestExtrairFloat(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	valor, err := extrator.ExtrairFloat("salario")
 	if err != nil {
 		t.Fatalf("Erro ao extrair float: %v", err)
 	}
-	
+
 	if valor != 5000.50 {
 		t.Errorf("Esperado 5000.50, obtido %.2f", valor)
 	}
@@ -258,12 +258,12 @@ func TestExtrairFloat(t *testing.T) {
 
 func TestExtrairBool(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	valor, err := extrator.ExtrairBool("ativo")
 	if err != nil {
 		t.Fatalf("Erro ao extrair bool: %v", err)
 	}
-	
+
 	if valor != true {
 		t.Errorf("Esperado true, obtido %v", valor)
 	}
@@ -271,12 +271,12 @@ func TestExtrairBool(t *testing.T) {
 
 func TestExtrairArray(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	valor, err := extrator.ExtrairArray("cursos")
 	if err != nil {
 		t.Fatalf("Erro ao extrair array: %v", err)
 	}
-	
+
 	if len(valor) != 2 {
 		t.Errorf("Esperado 2 elementos, obtido %d", len(valor))
 	}
@@ -284,12 +284,12 @@ func TestExtrairArray(t *testing.T) {
 
 func TestExtrairObjeto(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	valor, err := extrator.ExtrairObjeto("dados_profissionais")
 	if err != nil {
 		t.Fatalf("Erro ao extrair objeto: %v", err)
 	}
-	
+
 	if len(valor) == 0 {
 		t.Error("Objeto não deveria estar vazio")
 	}
@@ -297,7 +297,7 @@ func TestExtrairObjeto(t *testing.T) {
 
 func TestExiste(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	casos := []struct {
 		caminho  string
 		esperado bool
@@ -310,7 +310,7 @@ func TestExiste(t *testing.T) {
 		{"cursos[10]", false},
 		{"dados_profissionais.campo_falso", false},
 	}
-	
+
 	for _, caso := range casos {
 		resultado := extrator.Existe(caso.caminho)
 		if resultado != caso.esperado {
@@ -321,16 +321,16 @@ func TestExiste(t *testing.T) {
 
 func TestExtrairMultiplos(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	valores, err := extrator.ExtrairMultiplos("nome", "idade", "dados_profissionais.empregador")
 	if err != nil {
 		t.Fatalf("Erro ao extrair múltiplos: %v", err)
 	}
-	
+
 	if len(valores) != 3 {
 		t.Errorf("Esperado 3 valores, obtido %d", len(valores))
 	}
-	
+
 	if valores["nome"] != "jose" {
 		t.Errorf("Valor incorreto para 'nome'")
 	}
@@ -338,14 +338,14 @@ func TestExtrairMultiplos(t *testing.T) {
 
 func TestToJSON(t *testing.T) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	valor, _ := extrator.Extrair("dados_profissionais")
 	jsonBytes, err := ToJSON(valor)
-	
+
 	if err != nil {
 		t.Fatalf("Erro ao converter para JSON: %v", err)
 	}
-	
+
 	var resultado map[string]interface{}
 	if err := json.Unmarshal(jsonBytes, &resultado); err != nil {
 		t.Fatalf("JSON gerado é inválido: %v", err)
@@ -372,15 +372,15 @@ func TestCaminhosComplexos(t *testing.T) {
 			]
 		}
 	}`)
-	
+
 	extrator, _ := NovoExtrator(jsonComplexo)
-	
+
 	// Navegar em estrutura profunda
 	valor, err := extrator.Extrair("empresa.departamentos[0].funcionarios[1].nome")
 	if err != nil {
 		t.Fatalf("Erro ao extrair caminho complexo: %v", err)
 	}
-	
+
 	if valor != "Maria" {
 		t.Errorf("Esperado 'Maria', obtido '%v'", valor)
 	}
@@ -388,7 +388,7 @@ func TestCaminhosComplexos(t *testing.T) {
 
 func BenchmarkExtrairCampoSimples(b *testing.B) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		extrator.Extrair("nome")
@@ -397,7 +397,7 @@ func BenchmarkExtrairCampoSimples(b *testing.B) {
 
 func BenchmarkExtrairCampoAninhado(b *testing.B) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		extrator.Extrair("dados_profissionais.empregador")
@@ -406,7 +406,7 @@ func BenchmarkExtrairCampoAninhado(b *testing.B) {
 
 func BenchmarkExtrairArray(b *testing.B) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		extrator.Extrair("cursos[1].nome")
@@ -415,7 +415,7 @@ func BenchmarkExtrairArray(b *testing.B) {
 
 func BenchmarkExtrairMultiplos(b *testing.B) {
 	extrator, _ := NovoExtrator(jsonTeste)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		extrator.ExtrairMultiplos("nome", "idade", "dados_profissionais.empregador", "cursos[0].nome")

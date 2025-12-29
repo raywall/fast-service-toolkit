@@ -14,48 +14,48 @@ var (
 	ErrUserAlreadyExists = errors.New("item already exists")
 )
 
-// EasyRepository gerencia a comunicação direta com o driver do DynamoDB (dyndb).
-// Seus métodos são internos ao pacote, incentivando o uso através do EasyService.
+// EasyRepository manages direct communication with the DynamoDB driver (dyndb)
+// Its methods are internal to the package, encouraging use through EasyService
 type EasyRepository[T any] struct {
-	config dyndb.TableConfig[T]
-	store  dyndb.Store[T]
+	Config dyndb.TableConfig[T]
+	Store  dyndb.Store[T]
 }
 
-// NewRepository inicializa o armazenamento para o tipo genérico T.
+// NewRepository initializes storage for generic type T
 func NewRepository[T any](client *dynamodb.Client, tableConfig dyndb.TableConfig[T]) *EasyRepository[T] {
 	return &EasyRepository[T]{
-		config: tableConfig,
-		store:  dyndb.New(client, tableConfig),
+		Config: tableConfig,
+		Store:  dyndb.New(client, tableConfig),
 	}
 }
 
-// list executa um Scan na tabela DynamoDB.
+// list performs a Scan on the DynamoDB table
 func (r *EasyRepository[T]) list(ctx context.Context) ([]T, string, error) {
-	return r.store.Scan().Exec(ctx)
+	return r.Store.Scan().Exec(ctx)
 }
 
-// create utiliza a operação PutItem para persistir a struct no banco.
+// create uses the PutItem operation to persist the struct in the database
 func (r *EasyRepository[T]) create(ctx context.Context, user *T) error {
-	return r.store.Put(ctx, *user)
+	return r.Store.Put(ctx, *user)
 }
 
-// get busca um item específico. Se sk for vazio na configuração, realiza a busca apenas pela pk.
+// get Search for a specific item. If sk is empty in the configuration, it searches only for pk
 func (r *EasyRepository[T]) get(ctx context.Context, pk, sk any) (*T, error) {
-	if r.config.SortKey == "" {
-		return r.store.Get(ctx, pk, nil)
+	if r.Config.SortKey == "" {
+		return r.Store.Get(ctx, pk, nil)
 	}
-	return r.store.Get(ctx, pk, sk)
+	return r.Store.Get(ctx, pk, sk)
 }
 
-// update realiza a atualização do item (atualmente via PutItem/Sobrescrita).
+// update performs the item update (currently via PutItem/Subscrive)
 func (r *EasyRepository[T]) update(ctx context.Context, user *T) error {
-	return r.store.Put(ctx, *user)
+	return r.Store.Put(ctx, *user)
 }
 
-// delete remove o item através das chaves informadas.
+// delete removes the item using the keys provided
 func (r *EasyRepository[T]) delete(ctx context.Context, pk, sk any) error {
-	if r.config.SortKey == "" {
-		return r.store.Delete(ctx, pk, nil)
+	if r.Config.SortKey == "" {
+		return r.Store.Delete(ctx, pk, nil)
 	}
-	return r.store.Delete(ctx, pk, sk)
+	return r.Store.Delete(ctx, pk, sk)
 }
