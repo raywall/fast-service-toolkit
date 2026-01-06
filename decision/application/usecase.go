@@ -118,18 +118,18 @@ func (u *ProcessRequestUseCase) applyEnrichment(ctx context.Context, mw *domain.
 				}
 			}
 
-			// case "graphql":
-			// 	// Implementar com u.api.CallAPI
-			// 	// Para GraphQL, simula a resposta
-			// 	if _, exists := input.Fields["limitMaximo"]; !exists {
-			// 		// Aqui você pode usar valores do AddTo ou valores fixos de fallback
-			// 		if fixedValue, hasFixed := source.AddTo["limiteMaximo"]; hasFixed {
-			// 			input.Fields["limiteMaximo"] = u.interfaceToStructPb(fixedValue)
-			// 		} else {
-			// 			input.Fields["limiteMaximo"] = structpb.NewNumberValue(500.0)
-			// 		}
-			// 	}
-			// }
+		case "graphql":
+		// 	// Implementar com u.api.CallAPI
+		// 	// Para GraphQL, simula a resposta
+		// 	if _, exists := input.Fields["limitMaximo"]; !exists {
+		// 		// Aqui você pode usar valores do AddTo ou valores fixos de fallback
+		// 		if fixedValue, hasFixed := source.AddTo["limiteMaximo"]; hasFixed {
+		// 			input.Fields["limiteMaximo"] = u.interfaceToStructPb(fixedValue)
+		// 		} else {
+		// 			input.Fields["limiteMaximo"] = structpb.NewNumberValue(500.0)
+		// 		}
+		// 	}
+		// }
 		}
 	}
 	return nil

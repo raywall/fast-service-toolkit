@@ -31,8 +31,8 @@ func NewLogAdapter() *LogAdapter {
 
 // Log registra com placeholders no formato {input.field}
 func (l *LogAdapter) Log(msg string, input *structpb.Struct) {
-	// Processa
-	processedMsg := ""
+	// Processa placeholders no formato {input.fieldName}
+	processedMsg := processPlaceholders(msg, input)
 	log.Print(processedMsg)
 }
 
