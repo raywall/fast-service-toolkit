@@ -1,0 +1,100 @@
+service:
+  name: "sample-service"
+  runtime: "local" # Opções: local, lambda, ecs, ec2, eks. Condiciona configs como port.
+  logging:
+    enabled: true
+    level: "info" # Opções: debug, info, warn, error
+  metrics:
+    enabled: false
+    datadog:
+      addr: "127.0.0.1?8125"
+  timeout: "500ms" # Duração máxima para processamento inteiro
+  on_timeout:
+    code: 504
+    msg: "Timeout: processamento demorou demais"
+  route: /process
+  port: 8090 # Ignorado se runtime=lambda
+
+steps:
+  input:
+  # Pré-processamento: enriquecimento, transforms iniciais, logs/metrics
+  - type: validate
+    expr: "input.valor > 0 && input.valor <= input.limiteMaximo && (input.moeda == 'BRL' || input.moeda == 'USD')"
+    on_fail:
+      code: 400
+      msg: "Erro de negócio: valor ou moeda inválido"
+
+  processing:
+  # Validações e transforms principais
+  - type: validate
+    expr: input.idade >= 18 && input.tipo == 'adulto'
+    on_fail:
+      code: 500
+      msg: "Erro interno: idade ou tipo inválido"
+  - type: transform
+    expr: "input.valor > 100 ? set(output, 'beneficios.desconto', input.valor * 0.1) : set(output, 'beneficios.desconto', 0)" # Extensão CEL para .set()
+
+  output:
+  # Pós-processamento: filtros, validações finais, logs/metrics
+  - type: output
+    fields:
+      # Mapeia para estrutura nested
+      valor: input.valor
+      limiteMaximo: input.limiteMaximo
+      moeda: input.moeda
+      idade: input.idade
+      beneficios:
+        desconto: output.beneficios.desconto # Suporte nested (YAML maps)
+  - type: validate
+    expr: output.beneficios.desconto <= 20 # Acesso nested em CEL
+    on_fail:
+      code: 400
+      msg: "Erro de negócio: desconto alto demais"
+  - type: metrics
+    datadog:
+      metric: godecision.transacao.sucesso
+      action: increment
+      value: 1
+      tags:
+        descontoAplicado: output.beneficios.desconto
+        moeda: output.moeda
+
+middleware:
+# Aplicados em orde: antes/durante/depois do handler HTTP
+- type: enrichment
+  config:
+    parallel: false
+    sources:
+    - type: "fixed" # tipo fixo
+      add_to:
+        limiteMaximo: 500.00 # Valor fixo da configuração
+      on_fail:
+        code: 500
+        msg: erro no enrichment fixo
+    - type: graphql # ou "rest" para futuras integracoes
+      endpoint: https://api.example.com/graphql
+      method: POST # Para REST; ignorado em GraphQL
+      query: | # Para GraphQL; ou "body" para REST
+        query {
+          limiteMaximo(cep: $cep) {
+            valor
+          }
+        }
+      variables:
+        # Mapeia input (CEL exprs)
+        cep: input.endereco.cep
+      headers:
+        # Opcional, para auth/API keys
+        Authorization: Bearer {{ .Env.API_KEY }} # Placeholders para env vars/secrets
+      add_to:
+        # Adiciona ao input
+        limiteMaximo: result.data.limiteMaximo.valor
+    # - type: "logging" # Automático se service.logging.enabled
+    #   config: {} # Opcional, ex: format: "json"
+    - type: rate_limit
+      config:
+        rps: 10 # Requests por segundo; stub por enquanto
+        burst: 20
+    - type: auth
+      config:
+        jwt_secret: "{{ .Env.JWT_SECRET }}"
