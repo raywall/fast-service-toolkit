@@ -1,0 +1,41 @@
+version: "1.0"
+service:
+  name: "secure-proxy"
+  runtime: "local"
+  port: 8082
+  route: "/secure-data"
+  timeout: "5s"
+  on_timeout:
+    code: 504
+    msg: "Timeout na transação segura"
+  logging:
+    enabled: true
+    level: "debug"
+    format: "console"
+  metrics:
+    datadog:
+      enabled: false
+
+middlewares:
+  - id: "enrich_secure_echo"
+    type: enrichment
+    config:
+      sources:
+        - name: "secure_echo"
+          type: "rest"
+          params:
+            method: "GET"
+            url: "https://httpbin.org/bearer"
+          headers:
+            # Tenta injetar via env var, se não existir envia string literal
+            Authorization: "'Bearer ' + env.MY_API_TOKEN"
+
+steps:
+  input: {}
+  processing: {}
+  output:
+    status_code: 200
+    body:
+      authenticated: "detection.secure_echo.authenticated"
+      token_used: "detection.secure_echo.token"
+      message: "'Acesso realizado com segredo injetado'"

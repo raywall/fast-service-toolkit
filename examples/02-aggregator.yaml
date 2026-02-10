@@ -1,0 +1,58 @@
+version: "1.0"
+
+service:
+  name: "profile-aggregator"
+  runtime: "local"
+  port: 8081
+  route: "/profile"
+  timeout: "5s"
+  on_timeout:
+    code: 504
+    msg: "Timeout ao agregar perfis"
+  logging:
+    enabled: true
+    level: "info"
+    format: "console"
+  metrics:
+    datadog:
+      enabled: false
+
+middlewares:
+  - id: "enrich_data_aggregation"
+    type: enrichment
+    config:
+      strategy: "parallel"
+      sources:
+        - name: "remote_data"
+          type: "rest"
+          params:
+            method: "GET"
+            url: "https://jsonplaceholder.typicode.com/users/2"
+        
+        - name: "local_rules"
+          type: "fixed"
+          params:
+            premium_id_limit: 5 
+            default_role: "subscriber"
+
+steps:
+  input:
+    validations: []
+
+  processing:
+    validations: []
+    transformations:
+      - name: "calc_premium"
+        condition: "int(detection.remote_data.id) < int(detection.local_rules.premium_id_limit)"
+        value: "true"
+        else_value: "false"
+        target: "vars.is_premium"
+
+  output:
+    status_code: 200
+    body:
+      user_id: "detection.remote_data.id"
+      name: "detection.remote_data.name"
+      company: "detection.remote_data.company.name"
+      role: "detection.local_rules.default_role"
+      is_premium: "vars.is_premium"

@@ -1,0 +1,58 @@
+version: '1.0'
+name: user-gateway
+
+service:
+  name: user-gateway
+  type: rest
+  runtime: local
+  port: 8080
+  route: /get-user
+  timeout: 500ms
+  on_timeout:
+    code: 504
+    msg: Gateway Timeout
+  logging:
+    enabled: true
+    level: info
+    format: console
+
+middlewares:
+  - id: enrich_upstream_user
+    type: enrichment
+    config:
+      strategy: parallel
+      stop_on_error: true
+      sources:
+        - name: upstream_user
+          type: rest
+          params:
+            method: GET
+            url: '''https://jsonplaceholder.typicode.com/users/'' + string(int(input.user_id))'
+            timeout: 200ms
+            body_type: json
+            headers:
+              User-Agent: FastServiceToolkit/1.0
+
+steps:
+  input:
+    validations:
+      - id: check_id
+        expr: input.user_id > 0 && input.user_id <= 10
+        on_fail:
+          code: 400
+          msg: ID deve ser entre 1 e 10
+
+  processing:
+    validations: []
+    transformations: []
+    metrics: []
+
+  output:
+    status_code: 200
+    body:
+      id: detection.upstream_user.id
+      nome_completo: detection.upstream_user.name
+      email: detection.upstream_user.email
+      empresa: detection.upstream_user.company.name
+      servico: '''User Gateway V1'''
+    metrics: []

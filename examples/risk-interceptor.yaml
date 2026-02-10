@@ -1,0 +1,83 @@
+version: 1.0
+service:
+  name: risk-analysis-interceptor
+  runtime: local
+  port: 9090
+  route: /transactions/authorize
+  timeout: 5s
+  type: interceptor
+
+  on_timeout:
+    code: 504
+    msg: Gateway Timeout
+
+  logging:
+    level: info
+    format: console
+    enabled: true
+
+middlewares:
+  - type: enrichment
+    id: geo_intelligence
+    config:
+      strategy: parallel
+      sources:
+        # Simula obter dados de GeoIP. Usamos um IP fixo do Google para garantir sucesso na demo.
+        # Em prod, usariamos ${input.client_ip}
+        - name: geo_data
+          type: rest
+          params:
+            url: http://ip-api.com/json/8.8.8.8 
+            method: GET
+
+steps:
+  input:
+    validations:
+      - id: chk_amount
+        expr: input.amount > 0
+        on_fail: { code: 400, msg: Invalid amount }
+
+  processing:
+    transformations:
+      # Regra de Risco: Valor alto (> 5000) OU País fora do esperado (diferente de US para este IP)
+      - name: assess_risk
+        target: vars.risk_level
+        condition: input.amount > 5000 || detection.geo_data.countryCode != 'US'
+        value: "'HIGH'"
+        else_value: "'LOW'"
+
+      - name: generate_audit_id
+        target: vars.audit_id
+        condition: true
+        value: "'AUDIT-' + string(input.transaction_id)"
+
+  output:
+    status_code: 200
+
+    # Construção do Payload Enriquecido para o Sistema Legado
+    body:
+      original_transaction:
+        id: ${input.transaction_id}
+        val: ${input.amount}
+        curr: ${input.currency}
+      
+      # Dados injetados pelo Interceptor
+      risk_assessment:
+        level: ${vars.risk_level}
+        audit_key: ${vars.audit_id}
+      
+      geo_context:
+        country: ${detection.geo_data.country}
+        isp: ${detection.geo_data.isp}
+        timezone: ${detection.geo_data.timezone}
+
+    # Headers mandatórios para o legado
+    headers:
+      X-Risk-Class: ${vars.risk_level}
+      X-Forwarded-By: Fast-Service-Interceptor
+
+    # Forwarding (Proxy): Envia para o 'Core Bancário' (Simulado pelo HttpBin)
+    target:
+      url: https://httpbin.org/post
+      method: POST
+      timeout: 5s

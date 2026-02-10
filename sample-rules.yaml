@@ -7,7 +7,7 @@ service:
   metrics:
     enabled: false
     datadog:
-      addr: "127.0.0.1?8125"
+      addr: "127.0.0.1:8125"
   timeout: "500ms" # Duração máxima para processamento inteiro
   on_timeout:
     code: 504
@@ -89,12 +89,12 @@ middleware:
       add_to:
         # Adiciona ao input
         limiteMaximo: result.data.limiteMaximo.valor
-    # - type: "logging" # Automático se service.logging.enabled
-    #   config: {} # Opcional, ex: format: "json"
-    - type: rate_limit
-      config:
-        rps: 10 # Requests por segundo; stub por enquanto
-        burst: 20
-    - type: auth
-      config:
-        jwt_secret: "{{ .Env.JWT_SECRET }}"
+# - type: "logging" # Automático se service.logging.enabled
+#   config: {} # Opcional, ex: format: "json"
+- type: rate_limit
+  config:
+    rps: 10 # Requests por segundo; stub por enquanto
+    burst: 20
+- type: auth
+  config:
+    jwt_secret: "{{ .Env.JWT_SECRET }}"

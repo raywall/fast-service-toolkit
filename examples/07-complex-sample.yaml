@@ -1,0 +1,131 @@
+version: '1.0'
+name: loan-processor-api
+
+service:
+  name: loan-processor-api
+  type: rest
+  runtime: lambda
+  timeout: 5s
+  route: /api/test
+  on_timeout:
+    code: 504
+    msg: Credit Analysis Timed Out
+  logging:
+    enabled: true
+    level: info
+    format: console
+  metrics:
+    datadog:
+      enabled: true
+      namespace: fintech.loans
+      addr: localhost:8125
+
+middlewares:
+  - id: ddos_protection
+    type: rate_limit
+    config:
+      rps: 100
+      burst: 200
+      id: ddos_protection
+  - id: partner_auth
+    type: auth_provider
+    config:
+      provider: oauth2
+      token_url: https://auth.fintech.com/oauth/token
+      client_id: ${secret.auth_client_id}
+      client_secret: ${secret.auth_client_secret}
+      output_var: partner_data
+      id: partner_auth
+  - id: data_gathering
+    type: enrichment
+    config:
+      strategy: parallel
+      stop_on_error: true
+      sources:
+        - name: internal_history
+          type: aws_dynamodb
+          params:
+            region: us-east-1
+            table: CustomerLedger
+            key:
+              PK: '''CUST#'' + input.tax_id'
+              SK: SUMMARY
+        - name: credit_bureau
+          type: rest
+          params:
+            method: GET
+            url: '''https://api.serasa-mock.com/score/v1/'' + input.tax_id'
+            timeout: 2s
+            headers:
+              Authorization: '''Bearer '' + env.BUREAU_API_KEY'
+        - name: fraud_list
+          type: aws_s3
+          params:
+            region: us-east-1
+            bucket: compliance-assets
+            key: sanctions/global_blacklist.json
+            format: json
+
+steps:
+  input:
+    validations:
+      - id: check_age
+        expr: int(input.age) >= 18
+        on_fail:
+          code: 400
+          msg: Applicant must be 18+
+      - id: check_amount
+        expr: int(input.amount) >= 1000 && int(input.amount) <= 50000
+        on_fail:
+          code: 400
+          msg: Amount out of limits (1k - 50k)
+
+  processing:
+    validations:
+      - id: fraud_check
+        expr: '!(input.tax_id in vars.fraud_list.blocked_ids)'
+        on_fail:
+          code: 403
+          msg: 'Compliance Reject: ID Blocked'
+      - id: min_score_check
+        expr: int(vars.credit_bureau.score) > 400
+        on_fail:
+          code: 422
+          msg: Score too low for this product
+    transformations:
+      - name: calc_dti
+        target: vars.dti_ratio
+        condition: double(vars.internal_history.current_debt) / double(input.monthly_income)
+        value: 1
+        else_value: 0
+      - name: define_tier
+        target: vars.risk_tier
+        condition: vars.credit_bureau.score > 800 && vars.dti_ratio < 0.3
+        value: '''A'''
+        else_value: '''B'''
+      - name: calc_interest_rate
+        target: vars.final_rate
+        condition: vars.risk_tier == 'A'
+        value: '1.99'
+        else_value: '3.50'
+    metrics: []
+
+  output:
+    status_code: 200
+    body:
+      decision: '''APPROVED'''
+      # proposal_id: uuid.new()
+      # details:
+      approved_amount: input.amount
+      interest_rate_monthly: vars.final_rate
+      risk_tier: vars.risk_tier
+      # meta:
+      # processed_at: time.now()
+      score_source: '''Bureau V1'''
+    metrics: []
+      # - metric_id: loan.decision
+      #   type: count
+      #   value: '1'
+      #   tags:
+      #     tier: ${vars.risk_tier}
+      #     partner: ${vars.partner_data.client_id}

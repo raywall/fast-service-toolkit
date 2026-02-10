@@ -1,0 +1,84 @@
+version: '1.0'
+service:
+  name: poke-social-mesh
+  runtime: local
+  port: 9090
+  route: /graphql # Rota do Playground/API
+  timeout: 5s     # Aumentei o timeout pois chamadas externas podem demorar
+  type: graphql
+  
+  on_timeout:
+    code: 504
+    msg: Gateway Timeout
+
+  logging:
+    level: info
+    format: console
+    enabled: true
+
+graphql:
+  enabled: true
+  route: /graphql
+
+  # Definição dos Tipos (Schema)
+  types:
+    Pokemon:
+      description: Um monstrinho de bolso
+      fields:
+        name:
+          type: String
+        url:
+          type: String
+
+        # Este campo é resolvido via REST API (Federation)
+        social_comments:
+          type: '[Comment]'
+          description: Comentários de treinadores sobre este pokemon
+          source:
+            type: rest
+            params:
+              # Usamos uma API fake de comentários, passando o ID do pokemon como postId
+              # 'source' aqui se refere ao objeto pai (Pokemon)
+              method: GET
+              url: https://jsonplaceholder.typicode.com/comments?postId=1
+              # Nota: Na API real JSONPlaceholder, postId=1 sempre retorna os mesmos.
+              # Num caso real, faríamos parsing da URL para pegar o ID real do pokemon.
+
+    Comment:
+      description: Comentário de um usuário
+      fields:
+        id: { type: Int }
+        name: { type: String }
+        body: { type: String }
+        email: { type: String }
+
+    PokemonList:
+      fields:
+        count: { type: Int }
+        # CORRIGIDO: Aspas para indicar string "[Pokemon]"
+        results: { type: "[Pokemon]" }
+
+  # Entry Point
+  query:
+    listPokemons:
+      type: PokemonList
+      args:
+        limit: Int
+      source:
+        type: graphql
+        params:
+          response_path: pokemons
+          endpoint: https://graphql-pokeapi.graphcdn.app/
+          query: |
+            query($limit: Int) {
+              pokemons(limit: $limit) {
+                count
+                results {
+                  name
+                  url
+                }
+              }
+            }
+            
+          variables:
+            limit: int(args.limit)
