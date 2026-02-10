@@ -4,7 +4,7 @@ import (
 	"log"
 	"sync"
 
-	"github.com/raywall/fast-service-lab/tools/emulator/config"
+	"github.com/raywall/fast-service-toolkit/tools/emulator/config"
 )
 
 // Injetável para testes

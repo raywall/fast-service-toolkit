@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/raywall/fast-service-lab/pkg/auth"
-	"github.com/raywall/fast-service-lab/pkg/config"
-	"github.com/raywall/fast-service-lab/pkg/rules" // Importante para inicializar o RuleManager
+	"github.com/raywall/fast-service-toolkit/pkg/auth"
+	"github.com/raywall/fast-service-toolkit/pkg/config"
+	"github.com/raywall/fast-service-toolkit/pkg/rules" // Importante para inicializar o RuleManager
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 )

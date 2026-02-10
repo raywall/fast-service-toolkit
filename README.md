@@ -1,4 +1,4 @@
-# fast-service-lab (fast-service-toolkit)
+# fast-service-toolkit
 
 O **fast-service-toolkit** é uma engine em Go para construção de **Nanoserviços REST** e **GraphQL Mesh** de alta performance via configuração *low-code* (YAML).
 
@@ -333,7 +333,7 @@ middlewares:
 ## Estrutura do projeto
 
 ```text
-[github.com/raywall/fast-service-lab](https://github.com/raywall/fast-service-lab)
+[github.com/raywall/fast-service-toolkit](https://github.com/raywall/fast-service-toolkit)
 ├── cmd/server          # Entrypoint da aplicação
 ├── examples/           # Exemplos completos (01 a 06)
 ├── pkg/

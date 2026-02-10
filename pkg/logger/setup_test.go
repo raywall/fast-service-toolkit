@@ -3,7 +3,7 @@ package logger
 import (
 	"testing"
 
-	"github.com/raywall/fast-service-lab/pkg/config"
+	"github.com/raywall/fast-service-toolkit/pkg/config"
 	"github.com/rs/zerolog"
 )
 

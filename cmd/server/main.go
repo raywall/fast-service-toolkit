@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/raywall/fast-service-lab/pkg/engine"
-	"github.com/raywall/fast-service-lab/pkg/transport"
+	"github.com/raywall/fast-service-toolkit/pkg/engine"
+	"github.com/raywall/fast-service-toolkit/pkg/transport"
 )
 
 var (

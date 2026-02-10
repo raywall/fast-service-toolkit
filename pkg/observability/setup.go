@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/DataDog/datadog-go/v5/statsd"
-	"github.com/raywall/fast-service-lab/pkg/config"
-	"github.com/raywall/fast-service-lab/pkg/metrics"
+	"github.com/raywall/fast-service-toolkit/pkg/config"
+	"github.com/raywall/fast-service-toolkit/pkg/metrics"
 )
 
 // NoopProvider é um placeholder para quando métricas estão desabilitadas.

@@ -3,7 +3,7 @@ package engine
 import (
 	"context"
 
-	"github.com/raywall/fast-service-lab/pkg/config"
+	"github.com/raywall/fast-service-toolkit/pkg/config"
 )
 
 // Loader é responsável por carregar e decodificar a configuração do serviço.

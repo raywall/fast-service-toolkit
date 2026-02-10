@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/raywall/fast-service-lab/pkg/config/injector"
+	"github.com/raywall/fast-service-toolkit/pkg/config/injector"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/raywall/fast-service-lab/pkg/config"
-	"github.com/raywall/fast-service-lab/pkg/engine"
+	"github.com/raywall/fast-service-toolkit/pkg/config"
+	"github.com/raywall/fast-service-toolkit/pkg/engine"
 	"github.com/stretchr/testify/assert"
 )
 

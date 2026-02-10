@@ -13,8 +13,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	localConfig "github.com/raywall/fast-service-lab/pkg/config"
-	"github.com/raywall/fast-service-lab/pkg/config/injector"
+	localConfig "github.com/raywall/fast-service-toolkit/pkg/config"
+	"github.com/raywall/fast-service-toolkit/pkg/config/injector"
 	"gopkg.in/yaml.v2"
 )
 

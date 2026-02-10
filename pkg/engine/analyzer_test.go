@@ -3,7 +3,7 @@ package engine
 import (
 	"testing"
 
-	"github.com/raywall/fast-service-lab/pkg/config"
+	"github.com/raywall/fast-service-toolkit/pkg/config"
 )
 
 func TestAnalyze_Detection(t *testing.T) {

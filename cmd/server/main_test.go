@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/raywall/fast-service-lab/pkg/engine"
+	"github.com/raywall/fast-service-toolkit/pkg/engine"
 )
 
 func TestRun_ServerBootstrap(t *testing.T) {

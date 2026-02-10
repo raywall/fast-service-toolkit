@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-	"github.com/raywall/fast-service-lab/tools/emulator/types"
+	"github.com/raywall/fast-service-toolkit/tools/emulator/types"
 )
 
 // RouteConfig para cada rota

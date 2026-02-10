@@ -3,8 +3,8 @@ package metrics
 import (
 	"testing"
 
-	"github.com/raywall/fast-service-lab/pkg/config"
-	"github.com/raywall/fast-service-lab/pkg/rules"
+	"github.com/raywall/fast-service-toolkit/pkg/config"
+	"github.com/raywall/fast-service-toolkit/pkg/rules"
 )
 
 // MockProvider para verificar chamadas

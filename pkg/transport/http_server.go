@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/raywall/fast-service-lab/pkg/engine"
+	"github.com/raywall/fast-service-toolkit/pkg/engine"
 	"github.com/rs/zerolog/log"
 )
 

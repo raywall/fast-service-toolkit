@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/raywall/fast-service-lab/pkg/engine"
+	"github.com/raywall/fast-service-toolkit/pkg/engine"
 )
 
 func main() {

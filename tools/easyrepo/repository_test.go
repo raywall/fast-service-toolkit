@@ -3,8 +3,8 @@ package easyrepo
 import (
 	"testing"
 
-	"github.com/raywall/fast-service-lab/tools/dyndb"
-	"github.com/raywall/fast-service-lab/tools/easyrepo/models"
+	"github.com/raywall/fast-service-toolkit/tools/dyndb"
+	"github.com/raywall/fast-service-toolkit/tools/easyrepo/models"
 	"github.com/stretchr/testify/assert"
 )
 

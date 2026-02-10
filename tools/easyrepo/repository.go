@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/raywall/fast-service-lab/tools/dyndb"
+	"github.com/raywall/fast-service-toolkit/tools/dyndb"
 )
 
 var (

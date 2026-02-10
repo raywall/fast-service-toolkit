@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/raywall/fast-service-lab/pkg/enrichment"
+	"github.com/raywall/fast-service-toolkit/pkg/enrichment"
 )
 
 // Regex para capturar padrões ${tipo.chave}

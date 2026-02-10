@@ -3,7 +3,7 @@ package observability
 import (
 	"testing"
 
-	"github.com/raywall/fast-service-lab/pkg/config"
+	"github.com/raywall/fast-service-toolkit/pkg/config"
 )
 
 func TestSetupMetrics(t *testing.T) {

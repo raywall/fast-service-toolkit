@@ -92,4 +92,4 @@
 // "Configuration as Code, Logic as Expression". O Toolkit visa eliminar o código
 // repetitivo de infraestrutura, permitindo que times foquem puramente na regra
 // de negócio e na integração de sistemas.
-package fast_service_lab
+package fast_service_toolkit

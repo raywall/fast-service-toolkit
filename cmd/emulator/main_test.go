@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/raywall/fast-service-lab/tools/emulator/config"
+	"github.com/raywall/fast-service-toolkit/tools/emulator/config"
 )
 
 func TestEmulator_Main_Run(t *testing.T) {

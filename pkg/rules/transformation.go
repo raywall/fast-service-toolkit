@@ -3,7 +3,7 @@ package rules
 import (
 	"fmt"
 
-	"github.com/raywall/fast-service-lab/pkg/config"
+	"github.com/raywall/fast-service-toolkit/pkg/config"
 )
 
 // TransformationResult contém o resultado de uma operação de transformação.

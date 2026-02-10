@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/graphql-go/graphql"
-	"github.com/raywall/fast-service-lab/pkg/config"
-	"github.com/raywall/fast-service-lab/pkg/enrichment"
-	"github.com/raywall/fast-service-lab/pkg/rules"
+	"github.com/raywall/fast-service-toolkit/pkg/config"
+	"github.com/raywall/fast-service-toolkit/pkg/enrichment"
+	"github.com/raywall/fast-service-toolkit/pkg/rules"
 )
 
 var interpolationRegex = regexp.MustCompile(`\$\{([^}]+)\}`)

@@ -21,7 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/raywall/fast-service-lab/tools/envloader"
+	"github.com/raywall/fast-service-toolkit/tools/envloader"
 )
 
 // dynamoStore é a implementação concreta e não exportada de Store[T].
