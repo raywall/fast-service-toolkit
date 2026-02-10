@@ -1,0 +1,60 @@
+version: "1.0"
+
+service:
+  name: "user-dynamo-service"
+  runtime: "local"
+  port: 8090
+  route: "/ignored"
+  timeout: "5s"
+  on_timeout:
+    code: 504
+    msg: "Timeout no DynamoDB"
+  logging:
+    enabled: true
+    level: "debug"
+    format: "console"
+  metrics: { datadog: { enabled: false } }
+
+steps:
+  input: {}
+  processing: {}
+  output: { status_code: 200, body: {} }
+
+graphql:
+  enabled: true
+  route: "/api/graphql"
+
+  types:
+    Usuario:
+      description: "Mapeamento da tabela db_usuarios"
+      fields:
+        # A chave primária
+        id_pessoa: { type: "String" }
+        
+        # Campos simples
+        cargo: { type: "String" }
+        ativo: { type: "Boolean" }
+        
+        # Datas (Dynamo armazena como String ISO)
+        created_at: { type: "String" }
+        updated_at: { type: "String" }
+        
+        # Lista (Dynamo 'L' -> GraphQL '[String]')
+        scopes: { type: "[String]" }
+
+  query:
+    getUsuario:
+      type: "Usuario"
+      args:
+        # O ID que o front-end envia
+        id: "String"
+      source:
+        type: "dynamodb"
+        params:
+          region: "us-east-1"
+          table: "db_usuarios"
+          # Mapeamento CRÍTICO:
+          # A chave na tabela é 'id_pessoa'.
+          # O valor vem do argumento 'id' da query.
+          key: 
+            id_pessoa: "args.id"

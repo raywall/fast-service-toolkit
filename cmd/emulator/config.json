@@ -1,0 +1,123 @@
+[
+  {
+    "port": 8080,
+    "routes": [
+      {
+        "path": "/users",
+        "method": "GET",
+        "response": {
+          "status": 200,
+          "body": [
+            {
+              "id_cliente": 1,
+              "name": "User One",
+              "email": "user1@example.com"
+            },
+            {
+              "id_cliente": 2,
+              "name": "User Two",
+              "email": "user2@example.com"
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users",
+        "method": "GET",
+        "query_params": [
+          {
+            "name": "id",
+            "maps_to": "id_cliente"
+          }
+        ],
+        "data": [
+          {
+            "id_cliente": 1,
+            "name": "User One",
+            "email": "user1@example.com"
+          },
+          {
+            "id_cliente": 2,
+            "name": "User Two",
+            "email": "user2@example.com"
+          }
+        ],
+        "response_on_match": {
+          "status": 200
+        },
+        "response_on_no_match": {
+          "status": 404,
+          "body": {
+            "error": "User not found"
+          }
+        }
+      },
+      {
+        "path": "/users/{id}",
+        "method": "GET",
+        "path_params": [
+          {
+            "name": "id",
+            "maps_to": "id_cliente"
+          }
+        ],
+        "data": [
+          {
+            "id_cliente": 1,
+            "name": "User One",
+            "email": "user1@example.com"
+          },
+          {
+            "id_cliente": 2,
+            "name": "User Two",
+            "email": "user2@example.com"
+          }
+        ],
+        "response_on_match": {
+          "status": 200
+        },
+        "response_on_no_match": {
+          "status": 404,
+          "body": {
+            "error": "User not found"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "port": 8081,
+    "routes": [
+      {
+        "path": "/products",
+        "method": "GET",
+        "response": {
+          "status": 200,
+          "body": [
+            {
+              "id": "prod1",
+              "name": "Product One"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "port": 8082,
+    "routes": [
+      {
+        "path": "/token",
+        "method": "POST",
+        "response": {
+          "status": 200,
+          "body": {
+            "access_token": "mock-jwt-token-999",
+            "expires_in": 3600,
+            "token_type": "Bearer"
+          }
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,92 @@
+version: "1.0"
+
+service:
+  name: "customer-service-graphql"
+  runtime: "local" # Ajustado para passar na validação (oneof)
+  port: 8085
+  route: "/ignored"
+  timeout: "5s"
+  
+  # Adicionado para corrigir erro: Field validation for 'OnTimeout' failed
+  on_timeout:
+    code: 504
+    msg: "Gateway Timeout"
+
+  logging:
+    enabled: true
+    level: "debug"
+    format: "console" # Adicionado para corrigir erro: Field validation for 'Format' failed
+
+  metrics:
+    datadog:
+      enabled: false
+
+middlewares: []
+
+# Adicionado para corrigir erro: ServiceConfig.Steps ... failed on the 'required' tag
+# O validador exige que 'steps' exista, mesmo que o GraphQL ignore o fluxo REST padrão.
+steps:
+  input:
+    validations: []
+  processing:
+    validations: []
+    transformations: []
+  output:
+    status_code: 200
+    body: {} # Corpo vazio para passar na validação
+
+graphql:
+  enabled: true
+  route: "/graphql"
+  
+  # Definição dos Tipos (Schema)
+  types:
+    Order:
+      fields:
+        id:
+          type: ID
+        total:
+          type: Float
+        date:
+          type: String
+
+    Customer:
+      fields:
+        # --- Campos reais da tabela db_usuarios ---
+        id_pessoa:
+          type: ID
+        cargo:
+          type: String
+        ativo:
+          type: Boolean
+        
+        # --- Campos Mockados (Field Resolver) ---
+        # Resolvemos 'orders' localmente, simulando uma agregação de dados
+        orders:
+          type: "[Order]"
+          source:
+            type: fixed
+            params:
+              value:
+                - id: "101"
+                  total: 150.50
+                  date: "2023-10-01"
+                - id: "102"
+                  total: 89.90
+                  date: "2023-10-05"
+
+  # Definição da Query
+  query:
+    getCustomer:
+      type: Customer
+      args:
+        id: ID
+      source:
+        type: dynamodb
+        params:
+          region: "us-east-1"
+          # Aponta para a tabela existente (do Cenário 5)
+          table: "db_usuarios"
+          # Mapeia o argumento 'id' do GraphQL para a PK 'id_pessoa' do Dynamo
+          key:
+            id_pessoa: "args.id"

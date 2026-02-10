@@ -38,4 +38,9 @@ go.work.sum
 *.tfstate
 
 # MacOS
+PROMPT.md
+TESTING.md
+ABOUT.md
+README2.md
+output.txt
 .DS_Store

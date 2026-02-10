@@ -1,0 +1,95 @@
+version: "1.0"
+
+service:
+  name: "federation-gateway"
+  runtime: "local"
+  port: 8095
+  route: "/ignored"
+  timeout: "10s"
+  on_timeout: { code: 504, msg: "timeout" }
+  logging: { enabled: true, level: "debug", format: "console" }
+  metrics: { datadog: { enabled: false } }
+
+middlewares:
+  - id: "internal_auth"
+    type: "auth_provider"
+    config:
+      provider: "oauth2"
+      token_url: "https://httpbin.org/post"
+      client_id: "my-client"
+      client_secret: "my-secret"
+      output_var: "api_token"
+
+steps:
+  input: {}
+  processing: {}
+  output: { status_code: 200, body: {} }
+
+graphql:
+  enabled: true
+  route: "/graphql"
+
+  types:
+    # DEFINIÇÃO DO DASHBOARD COM RESOLVERS EMBUTIDOS
+    Dashboard:
+      fields:
+        # Campo 1: Metadados locais
+        query_info:
+          type: "QueryMeta"
+          source:
+            type: "fixed"
+            params:
+              user_requested: "source.user_requested"
+              doc_type: "source.doc_type"
+
+        # Campo 2: API Pública (JSONPlaceholder)
+        public_posts:
+          type: "[Post]"
+          source:
+            type: "rest"
+            params:
+              method: "GET"
+              # Concatena a URL com o ID que veio do pai
+              url: "'https://jsonplaceholder.typicode.com/posts?userId=' + string(source.user_requested)"
+
+        # Campo 3: API Segura (HttpBin)
+        secure_record:
+          type: "SecureDoc"
+          source:
+            type: "rest"
+            params:
+              method: "GET"
+              url: "https://httpbin.org/bearer"
+            headers:
+              # Injeta o token gerado pelo middleware
+              Authorization: "'Bearer ' + string(auth.api_token)"
+
+    QueryMeta:
+      fields:
+        user_requested: { type: "String" }
+        doc_type: { type: "String" }
+
+    Post:
+      fields:
+        id: { type: "Int" }
+        title: { type: "String" }
+
+    SecureDoc:
+      fields:
+        authenticated: { type: "Boolean" }
+        token: { type: "String" }
+
+  # QUERY PRINCIPAL (A Raiz)
+  query:
+    getDashboard:
+      type: "Dashboard"
+      args:
+        userId: "String"
+        docType: "String"
+      # O Adapter 'fixed' aqui serve para capturar os argumentos da query (args)
+      # e transformá-los no objeto pai (source) para os campos do Dashboard.
+      source:
+        type: "fixed"
+        params:
+          user_requested: "args.userId"
+          doc_type: "args.docType"

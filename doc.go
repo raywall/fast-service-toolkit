@@ -1,83 +1,95 @@
-// Package fast_service_toolkit fornece um conjunto de utilitários e abstrações
-// para acelerar o desenvolvimento de serviços backend em Go, focados em
-// operações robustas com DynamoDB, carregamento de configuração e gerenciamento
-// de microserviços.
+// Copyright 2025 Raywall Malheiros de Souza
+// Licensed under the Mozilla Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//	https://www.mozilla.org/en-US/MPL/2.0/
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// Package fast_service_lab (Fast Service Toolkit) é um framework High-Code/Low-Code
+// declarativo para construção rápida, segura e padronizada de serviços Backend
+// (REST e GraphQL) e BFFs (Backends for Frontends).
 //
 // Visão Geral:
-// Este módulo é uma caixa de ferramentas para construir aplicações de forma
-// rápida e eficiente, fornecendo soluções modulares para:
-// 1. Configuração (envloader): Carregamento de variáveis de ambiente para structs.
-// 2. Persistência de Dados (dyndb): Camada genérica, tipada e fluente sobre DynamoDB.
-// 3. Orquestração (api): Pipeline concorrente para chamadas de APIs externas e STS.
+// O Toolkit inverte o paradigma tradicional de desenvolvimento: em vez de escrever
+// código imperativo (handlers, services, repositories) para cada endpoint, o
+// desenvolvedor define o *comportamento* do serviço via configuração (YAML/JSON).
+// O framework se encarrega da orquestração, validação, conectividade e observabilidade.
 //
-// O design é focado na composabilidade e testabilidade, utilizando interfaces
-// e genéricos para garantir tipagem segura e fácil mocking.
+// O núcleo do framework baseia-se em uma arquitetura de Pipeline de Execução
+// alimentada por um motor de regras CEL (Common Expression Language), permitindo
+// lógica de negócio complexa, transformações de dados e validações sem recompilação.
 //
-// Sub-Pacotes Principais:
+// Modos de Operação:
 //
-// 1. envloader:
-//   - Carregamento de configurações via tags "env" e "envDefault".
-//   - Suporte a tipos nativos e structs aninhadas, com tratamento de erros tipados.
+//  1. REST Service Mode:
+//     Focado em endpoints HTTP tradicionais. Define um pipeline linear de execução:
+//     Input -> Validation -> Enrichment (Data Fetching) -> Processing (Business Logic) -> Output.
+//     Ideal para APIs de agregação, transformadores de dados e proxies inteligentes.
 //
-// 2. dyndb:
-//   - Abstração de persistência (Store[T]).
-//   - CRUD tipado e operações Batch.
-//   - QueryBuilder para consultas complexas com paginação segura.
+//  2. GraphQL Mesh Mode:
+//     Atua como um Gateway de federação ou orquestração. Permite definir schemas
+//     GraphQL onde os resolvers de cada campo são mapeados declarativamente para
+//     fontes de dados externas (REST, DynamoDB, Fixed), resolvendo automaticamente
+//     o grafo de dependências e concorrência.
 //
-// 3. api:
-//   - APIPipeline para execução concorrente de chamadas HTTP com gerenciamento de dependências.
-//   - Service Token Service (TokenService) para autenticação centralizada.
+//  3. Interceptor Mode (Smart Proxy):
+//     Atua como um Middleware Arquitetural (Ambassador Pattern) em frente a outros
+//     microsserviços. Ele recebe a requisição, enriquece o payload com dados de
+//     múltiplas fontes, aplica validações de negócio e encaminha a requisição
+//     "turbinada" para o serviço de destino, desacoplando a lógica de carga de dados.
 //
-// Exemplo de Início Rápido:
+// Componentes Principais (pkg):
 //
-// Demonstração da combinação de envloader e dyndb para inicialização de um Store.
+//   - pkg/engine: O cérebro do framework. Gerencia o ciclo de vida da requisição,
+//     carrega configurações e coordena os middlewares e steps.
 //
-//	package main
+//   - pkg/rules: Wrapper sobre o Google CEL. Oferece um ambiente seguro para execução
+//     de expressões lógicas (`input.age > 18`) e transformações (`vars.total * 0.1`)
+//     dentro da configuração YAML.
 //
-//	import (
-//		"context"
-//		"log"
+//   - pkg/enrichment: Camada de acesso a dados (Data Sources). Fornece conectores
+//     otimizados e instrumentados para REST, GraphQL, AWS DynamoDB, S3, Secrets
+//     Manager e Parameter Store.
 //
-//		"github.com/aws/aws-sdk-go-v2/aws"
-//		"github.com/aws/aws-sdk-go-v2/service/dynamodb" // Cliente AWS
-//		"github.com/raywall/fast-service-toolkit/dyndb"
-//		"github.com/raywall/fast-service-toolkit/envloader"
-//	)
+//   - pkg/auth: Gerenciamento de autenticação OAuth2 (Client Credentials) transparente.
+//     Gerencia automaticamente a obtenção, cache e renovação de tokens para chamadas
+//     externas.
 //
-//	// Estrutura para ser preenchida pelo envloader
-//	type AppConfig struct {
-//		TableName string `env:"DYNAMODB_TABLE_NAME"`
-//		HashKey string `env:"DYNAMODB_HASH_KEY" envDefault:"id"`
-//	}
+//   - pkg/transport: Abstração de entrada (Entrypoints). Permite que o mesmo "Engine"
+//     rode transparentemente em servidores HTTP locais (Gin/NetHttp), AWS Lambda
+//     (API Gateway/SQS) ou Containers ECS/EKS.
 //
-//	type User struct {
-//		ID string `dynamodbav:"id"`
-//		Name string `dynamodbav:"name"`
-//	}
+// Exemplo de Definição Declarativa (Interceptor):
 //
-//	func main() {
-//		// 1. Carregar configuração usando envloader (Foco no envloader!)
-//		var cfg AppConfig
-//		if err := envloader.Load(&cfg); err != nil {
-//			log.Fatalf("Erro ao carregar env: %v", err)
-//		}
+//	service:
+//	  name: "loan-enricher"
+//	  runtime: "lambda"
 //
-//		// 2. Criar a configuração do Store tipado
-//		tableCfg := dyndb.TableConfig[User]{
-//			TableName: cfg.TableName,
-//			HashKey:   cfg.HashKey,
-//		}
+//	middlewares:
+//	  - type: "enrichment"
+//	    config:
+//	      sources:
+//	        - name: "redis_data"
+//	          type: "aws_redis"
+//	          params: { key: "'USER:' + input.cpf" }
 //
-//		// 3. Inicializar Store
-//		// client := dynamodb.NewFromConfig(awsConfig) // Assumindo awsConfig configurado
-//		client := &dyndb.MockDynamoClient{} // Usando mock para o exemplo simples
-//		userStore := dyndb.New(client, tableCfg)
+//	steps:
+//	  output:
+//	    body:
+//	      original_req: "input"
+//	      enrichment: "detection.redis_data"
+//	    target:
+//	      url: "'http://pricing-service.internal/calc'"
+//	      method: "POST"
 //
-//		// 4. Usar o Store
-//		item, err := userStore.Get(context.Background(), "user-123", nil)
-//		if err != nil && err != dyndb.ErrNotFound {
-//			log.Fatalf("Erro ao buscar item: %v", err)
-//		}
-//		log.Printf("Item: %v", item)
-//	}
+// Filosofia:
+// "Configuration as Code, Logic as Expression". O Toolkit visa eliminar o código
+// repetitivo de infraestrutura, permitindo que times foquem puramente na regra
+// de negócio e na integração de sistemas.
 package fast_service_toolkit

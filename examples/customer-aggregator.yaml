@@ -1,0 +1,104 @@
+version: '1.0'
+
+service:
+  name: customer-360
+  runtime: local
+  port: 9090
+  route: /v1/customer/{id}
+  type: rest
+
+  timeout: 500ms
+  on_timeout:
+    code: 504
+    msg: Gateway Timeout
+  
+  logging:
+    level: info
+    format: console
+    enabled: true
+
+middlewares:
+  - id: internal_auth
+    type: auth_provider
+    config:
+      provider: oauth2
+      # Httpbin retorna um JSON qualquer, simulando um token response
+      token_url: http://localhost:8082/token
+      client_id: my-client
+      client_secret: my-secret
+      output_var: access_token
+  
+  # Busca dados em paralelo
+  - id: fetch_data
+    type: enrichment
+    config:
+      strategy: parallel
+      stop_on_error: true
+      sources:
+        # Fonte 1: Dados do Usuário
+        - name: user_data
+          type: rest
+          params:
+            url: https://jsonplaceholder.typicode.com/users/${input.id}
+            method: GET
+            timeout: 2s
+
+        # Fonte 2: Posts recentes (Simulando histórico financeiro)
+        - name: user_posts
+          type: rest
+          params:
+            url: https://jsonplaceholder.typicode.com/posts?userId=${input.id}
+            method: GET
+            timeout: 2s
+
+steps:
+  input:
+    validations:
+      # Garante que ID é numérico e positivo
+      - id: validate_id
+        expr: input.id.matches('^[0-9]+$')
+        on_fail:
+          code: 400
+          msg: ID must be numeric
+
+  processing:
+    validations: []
+    transformations:
+      # Lógica de Negócio: Calcula Score baseado no tamanho do nome da empresa (Demo)
+      - name: calc_score
+        condition: true 
+        value: detection.user_data.company.name.size() * 100
+        else_value: '0'
+        target: vars.score
+
+      # Categorização do Cliente
+      - name: categorize_tier
+        condition: int(vars.score) > 1000
+        value: "'PLATINUM'"
+        else_value: "'STANDARD'"
+        target: vars.tier
+
+    metrics: []
+
+  output:
+    status_code: 200
+    body:
+      customer_id: ${input.id}
+      profile:
+        name: ${detection.user_data.name}
+        email: ${detection.user_data.email}
+        city: ${detection.user_data.address.city}
+
+      financial_analysis:
+        score: ${vars.score}
+        tier: ${vars.tier}
+        active_contracts: ${detection.user_posts.size()}
+
+      metadata:
+        processed_at: time.now()
+
+    headers:
+      X-Calculated-Tier: ${vars.tier}
+      X-Internal-Token: ${auth.internal_auth.access_token}  # Demonstra uso do token gerado
+
+    metrics: []
