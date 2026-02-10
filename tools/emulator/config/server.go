@@ -14,6 +14,40 @@ type ServerConfig struct {
 	Routes []RouteConfig `json:"routes"`
 }
 
+// NewHandler cria um único http.Handler (Router) que agrega todas as rotas
+// definidas na configuração. Isso satisfaz a chamada no main.go.
+func NewHandler(cfg Config) http.Handler {
+	router := mux.NewRouter()
+
+	if len(cfg) == 0 {
+		// Rota padrão se não houver config
+		router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"status": "emulator running (no config)"}`))
+		})
+		return router
+	}
+
+	// Itera sobre todos os servidores definidos no JSON
+	for _, srv := range cfg {
+		for _, route := range srv.Routes {
+			// Usa o método NewHandler definido em route.go para criar a lógica de cada rota
+			// srv é passado para manter o contexto se necessário (embora route.go use apenas route config)
+			handler := srv.NewHandler(route)
+
+			r := router.HandleFunc(route.Path, handler)
+			if route.Method != "" {
+				r.Methods(route.Method)
+			}
+
+			log.Printf("Rota registrada: [%s] %s", route.Method, route.Path)
+		}
+	}
+
+	return router
+}
+
+// Start (Mantido para compatibilidade, caso usem isoladamente)
 func (s *ServerConfig) Start() {
 	router := mux.NewRouter()
 	for _, route := range s.Routes {

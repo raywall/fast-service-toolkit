@@ -2,69 +2,107 @@ package transport
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
-	"github.com/rs/zerolog"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
-// Mocks
-type MockSQS struct {
-	ReceiveFunc func() (*sqs.ReceiveMessageOutput, error)
+// --- Mocks ---
+
+type MockSQSClient struct {
+	mock.Mock
 }
 
-func (m *MockSQS) ReceiveMessage(ctx context.Context, params *sqs.ReceiveMessageInput, optFns ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
-	return m.ReceiveFunc()
+func (m *MockSQSClient) ReceiveMessage(ctx context.Context, params *sqs.ReceiveMessageInput, optFns ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
+	args := m.Called(ctx, params)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*sqs.ReceiveMessageOutput), args.Error(1)
 }
 
-func (m *MockSQS) DeleteMessage(ctx context.Context, params *sqs.DeleteMessageInput, optFns ...func(*sqs.Options)) (*sqs.DeleteMessageOutput, error) {
-	return &sqs.DeleteMessageOutput{}, nil
+func (m *MockSQSClient) DeleteMessage(ctx context.Context, params *sqs.DeleteMessageInput, optFns ...func(*sqs.Options)) (*sqs.DeleteMessageOutput, error) {
+	args := m.Called(ctx, params)
+	return nil, args.Error(1)
 }
 
+// MockEngineReloader Thread-Safe
 type MockEngineReloader struct {
-	ReloadCalled bool
+	mu       sync.Mutex
+	Reloaded bool
+	Err      error
 }
 
 func (m *MockEngineReloader) Reload() error {
-	m.ReloadCalled = true
-	return nil
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	m.Reloaded = true
+	return m.Err
 }
+
+// WasReloaded Helper para ler o estado de forma segura no teste
+func (m *MockEngineReloader) WasReloaded() bool {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.Reloaded
+}
+
+// --- Tests ---
 
 func TestSQSReloader_Integration(t *testing.T) {
 	// Setup
-	msgCh := make(chan *sqs.ReceiveMessageOutput, 1)
-	mockSQS := &MockSQS{
-		ReceiveFunc: func() (*sqs.ReceiveMessageOutput, error) {
-			// Simula espera da fila ou retorno imediato
-			select {
-			case msg := <-msgCh:
-				return msg, nil
-			case <-time.After(10 * time.Millisecond):
-				return &sqs.ReceiveMessageOutput{}, nil
-			}
-		},
-	}
-
+	mockSQS := new(MockSQSClient)
 	mockReloader := &MockEngineReloader{}
+
+	// Configuração do comportamento do Mock SQS
+	// 1ª chamada: Retorna uma mensagem de reload
+	mockSQS.On("ReceiveMessage", mock.Anything, mock.Anything).Return(&sqs.ReceiveMessageOutput{
+		Messages: []types.Message{
+			{
+				Body:          stringPtr(`{"action":"reload"}`),
+				ReceiptHandle: stringPtr("handle_123"),
+			},
+		},
+	}, nil).Once()
+
+	// 2ª chamada em diante: Retorna vazio para evitar loop infinito
+	mockSQS.On("ReceiveMessage", mock.Anything, mock.Anything).Return(&sqs.ReceiveMessageOutput{
+		Messages: []types.Message{},
+	}, nil).Maybe()
+
+	mockSQS.On("DeleteMessage", mock.Anything, mock.Anything).Return(nil, nil)
+
+	// Inicializa o Reloader usando o construtor da struct (CORREÇÃO AQUI)
+	// Substitui a chamada direta a monitorQueue
+	reloader := NewSQSReloader(mockSQS, "https://sqs.us-east-1.amazonaws.com/123/reload-queue", mockReloader)
+
 	ctx, cancel := context.WithCancel(context.Background())
-	logger := zerolog.Nop()
 
-	// Inicia o monitor em goroutine
-	go monitorQueue(ctx, mockSQS, "https://sqs.fake", mockReloader, logger)
+	// Executa o método Start em goroutine
+	go reloader.Start(ctx)
 
-	// Cenário: Envia mensagem simulada
-	msg := "update"
-	msgCh <- &sqs.ReceiveMessageOutput{
-		Messages: []types.Message{{Body: &msg, ReceiptHandle: &msg}},
-	}
-
-	// Aguarda processamento (assíncrono)
+	// Aguarda processamento
 	time.Sleep(100 * time.Millisecond)
-	cancel() // Para o loop
 
-	if !mockReloader.ReloadCalled {
-		t.Error("Reload não foi chamado após receber mensagem SQS")
-	}
+	// Para o loop
+	cancel()
+	time.Sleep(50 * time.Millisecond)
+
+	// Asserts
+	assert.True(t, mockReloader.WasReloaded(), "Engine deveria ter sido recarregada")
+
+	mockSQS.AssertCalled(t, "DeleteMessage", mock.Anything, &sqs.DeleteMessageInput{
+		QueueUrl:      stringPtr("https://sqs.us-east-1.amazonaws.com/123/reload-queue"),
+		ReceiptHandle: stringPtr("handle_123"),
+	})
+}
+
+func stringPtr(s string) *string {
+	return &s
 }
